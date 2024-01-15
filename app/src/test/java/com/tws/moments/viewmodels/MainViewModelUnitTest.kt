@@ -4,13 +4,13 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.tws.moments.api.MomentRepository
+import com.tws.moments.api.entry.TweetBean
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -45,7 +45,7 @@ class MainViewModelUnitTest {
     }
 
     @Test
-    fun test_fetch_tweets() {
+    fun `refresh tweets, retrieve 0 items`() {
         val momentRepository = mockk<MomentRepository>()
         coEvery {
             momentRepository.fetchTweets()
@@ -55,6 +55,21 @@ class MainViewModelUnitTest {
         mainViewModel.refreshTweets()
 
         assertEquals(0, mainViewModel.tweets.getOrAwaitValue().size)
+    }
+
+    @Test
+    fun `refresh tweets, retrieve 1 item`() {
+        val momentRepository = mockk<MomentRepository>()
+        coEvery {
+            momentRepository.fetchTweets()
+        } returns listOf(
+            TweetBean("")
+        )
+
+        val mainViewModel = MainViewModel(momentRepository)
+        mainViewModel.refreshTweets()
+
+        assertEquals(1, mainViewModel.tweets.getOrAwaitValue().size)
     }
 }
 
