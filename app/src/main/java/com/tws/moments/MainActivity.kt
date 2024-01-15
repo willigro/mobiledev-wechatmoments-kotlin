@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.tweets.observe(this, Observer {
             binding.swipeRefreshLayout.isRefreshing = false
             reqPageIndex = 1
-            adapter.tweets = it.toMutableList()
+            adapter.tweets = it?.toMutableList()
         })
     }
 
