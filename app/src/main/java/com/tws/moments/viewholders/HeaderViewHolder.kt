@@ -10,6 +10,10 @@ class HeaderViewHolder(private val binding: ItemMomentHeadBinding) :
     private var imageLoader = TWApplication.imageLoader
 
     fun bind(userBean: UserBean?) {
-
+        userBean?.also {
+            binding.tvUserNickname.text = userBean.nick
+            imageLoader.displayImage(userBean.profileImage, binding.ivUserProfile)
+            imageLoader.displayImage(userBean.avatar, binding.ivUserAvatar)
+        }
     }
 }
