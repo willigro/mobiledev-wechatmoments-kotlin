@@ -77,15 +77,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun subscribe() {
-        viewModel.userBean.observe(this, Observer {
+        viewModel.userBean.observe(this) {
             adapter.userBean = it
-        })
+        }
 
-        viewModel.tweets.observe(this, Observer {
+        viewModel.tweets.observe(this) {
             binding.swipeRefreshLayout.isRefreshing = false
             reqPageIndex = 1
             adapter.tweets = it?.toMutableList()
-        })
+        }
     }
 
     private fun initWindow() {

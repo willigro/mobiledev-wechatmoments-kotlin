@@ -7,7 +7,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tws.moments.TWApplication
 import com.tws.moments.adapters.CommentsAdapter
 import com.tws.moments.adapters.ImagesAdapter
+import com.tws.moments.api.entry.CommentsBean
 import com.tws.moments.api.entry.ImagesBean
+import com.tws.moments.api.entry.SenderBean
 import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.databinding.LayoutBaseTweetBinding
 import com.tws.moments.utils.dip
@@ -27,8 +29,21 @@ class TweetViewHolder(private val binding: LayoutBaseTweetBinding) :
     private lateinit var imagesAdapter: ImagesAdapter
     private lateinit var commentsAdapter: CommentsAdapter
     private var imageLoader = TWApplication.imageLoader
+
     fun bind(tweet: TweetBean) {
+        renderSenderContent(tweet.sender)
         renderTextContent(tweet.content)
+        renderImages(tweet.images)
+        renderComments(tweet.comments)
+    }
+
+    private fun renderComments(comments: List<CommentsBean>?) {
+        commentsAdapter.comments = comments
+    }
+
+    private fun renderSenderContent(sender: SenderBean?) {
+        binding.tvSenderNickname.text = sender?.nick
+        imageLoader.displayImage(sender?.avatar, binding.ivSenderAvatar)
     }
 
     private fun renderTextContent(content: String?) {
@@ -36,11 +51,12 @@ class TweetViewHolder(private val binding: LayoutBaseTweetBinding) :
     }
 
     private fun renderImages(imagesBean: List<ImagesBean>?) {
-        if (imagesBean == null || imagesBean.isEmpty()) {
+        if (imagesBean.isNullOrEmpty()) {
             binding.simpleImageView.visibility = View.GONE
             binding.imagesRecyclerView.visibility = View.GONE
             return
         }
+
         binding.imagesRecyclerView.layoutManager = if (imagesBean.size == 4) {
             GridLayoutManager(itemView.context, 2, RecyclerView.HORIZONTAL, false)
         } else {
@@ -50,17 +66,24 @@ class TweetViewHolder(private val binding: LayoutBaseTweetBinding) :
         if (imagesBean.size == 1) {
             binding.simpleImageView.visibility = View.VISIBLE
             binding.imagesRecyclerView.visibility = View.GONE
+
             val url = imagesBean[0].url
+
             imageLoader.displayImage(
                 url, binding.simpleImageView
             )
+
             binding.simpleImageView.tag = url
+
             imagesAdapter.images = null
         } else {
             binding.simpleImageView.visibility = View.GONE
             binding.imagesRecyclerView.visibility = View.VISIBLE
-            imagesAdapter.images =
-                imagesBean.asSequence().map { it.url ?: "" }.filter { it.isNotEmpty() }.toList()
+            imagesAdapter.images = imagesBean
+                .asSequence()
+                .map { it.url ?: "" }
+                .filter { it.isNotEmpty() }
+                .toList()
         }
     }
 
