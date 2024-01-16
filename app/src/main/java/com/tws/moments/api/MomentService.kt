@@ -2,8 +2,6 @@ package com.tws.moments.api
 
 import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.api.entry.UserBean
-import kotlinx.coroutines.Deferred
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 

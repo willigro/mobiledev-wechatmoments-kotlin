@@ -5,27 +5,22 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tws.moments.adapters.MomentsAdapter
-import com.tws.moments.api.MomentRepository
 import com.tws.moments.databinding.ActivityMainBinding
 import com.tws.moments.utils.ScreenAdaptiveUtil
 import com.tws.moments.utils.dip
 import com.tws.moments.viewmodels.MainViewModel
-import com.tws.moments.viewmodels.MainViewModelFactory
 import com.tws.moments.views.LoadMoreListener
 import com.tws.moments.views.itemdecoration.MomentDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 private const val TAG = "MainActivity##"
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-
+class MainActivity : ComponentActivity() {
     val viewModel: MainViewModel by viewModels()
 
     private val adapter = MomentsAdapter()
