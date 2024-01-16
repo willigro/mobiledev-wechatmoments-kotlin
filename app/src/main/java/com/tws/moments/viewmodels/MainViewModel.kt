@@ -6,14 +6,19 @@ import androidx.lifecycle.viewModelScope
 import com.tws.moments.api.MomentRepository
 import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.api.entry.UserBean
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.min
 
 private const val TAG = "MainViewModel##"
 
 private const val PAGE_TWEET_COUNT = 5
 
-class MainViewModel(private val repository: MomentRepository) : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val repository: MomentRepository
+) : ViewModel() {
 
     val userBean: MutableLiveData<UserBean> by lazy {
         MutableLiveData<UserBean>().also { loadUserInfo() }
