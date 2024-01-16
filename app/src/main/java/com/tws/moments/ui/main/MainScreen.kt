@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,7 +19,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -168,7 +171,9 @@ fun MomentItemComponent(
             ) {
                 Text(
                     text = tweetBean.content.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
                     maxLines = 5,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -179,14 +184,20 @@ fun MomentItemComponent(
                         bottom.linkTo(parent.bottom)
                         start.linkTo(tweetContent.start)
                         end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
                     }
                     .padding(
                         top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
                     ),
-
-                ) {
+            ) {
                 tweetBean.comments?.forEach { comments ->
                     CommentComponent(commentsBean = comments)
+
+                    DivisorHorizontal(
+                        modifier = Modifier.padding(
+                            top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                        )
+                    )
                 }
             }
         }
@@ -254,6 +265,7 @@ private fun MomentHeaderComponent(
 
         Text(
             text = userBean?.nick.orEmpty(),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
             modifier = Modifier
                 .constrainAs(userNickname) {
                     bottom.linkTo(parent.bottom)
@@ -271,11 +283,12 @@ private fun MomentHeaderComponent(
 private fun CommentComponent(commentsBean: CommentsBean) {
     Text(
         text = commentsBean.content.orEmpty(),
+        style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier
             .padding(
                 start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
                 bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
-            )
+            ),
     )
 }
 
