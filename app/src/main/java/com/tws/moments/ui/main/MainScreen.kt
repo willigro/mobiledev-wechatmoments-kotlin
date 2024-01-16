@@ -2,16 +2,15 @@ package com.tws.moments.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -115,7 +114,10 @@ private fun BaseTweetComponent(
     isHead: Boolean,
 ) {
     if (isHead) {
-        MomentHeaderComponent(userBean = userBean)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            MomentHeaderComponent(userBean = userBean)
+            MomentItemComponent(tweetBean = tweetBean)
+        }
     } else {
         MomentItemComponent(tweetBean = tweetBean)
     }
@@ -127,7 +129,10 @@ fun MomentItemComponent(
     tweetBean: TweetBean,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall)
+            .padding(horizontal = AppTheme.dimensions.paddingScreenDefault),
     ) {
         ConstraintLayout(
             modifier = Modifier.fillMaxWidth(),
@@ -171,9 +176,10 @@ fun MomentItemComponent(
                         top.linkTo(senderNickname.bottom)
                         start.linkTo(senderNickname.start)
                         end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
                     }
                     .padding(
-                        end = AppTheme.dimensions.paddingSpaceBetweenComponentsMedium,
+                        start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
                     )
             ) {
                 Text(
@@ -201,12 +207,6 @@ fun MomentItemComponent(
             ) {
                 tweetBean.comments?.forEach { comments ->
                     CommentComponent(commentsBean = comments)
-
-                    DivisorHorizontal(
-                        modifier = Modifier.padding(
-                            top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                        )
-                    )
                 }
             }
         }
@@ -254,21 +254,52 @@ fun TweetImages(images: List<ImagesBean>?) {
                 }
 
                 4 -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2)
-                    ) {
-                        items(filteredList) { photo ->
-                            GridImageComponent(photo)
+                    filteredList.chunked(2).forEach { photos ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            photos.forEachIndexed { index, photo ->
+                                GridImageComponent(
+                                    modifier = Modifier
+                                        .padding(
+                                            start = if (index == 0) {
+                                                AppTheme.dimensions.zero
+                                            } else {
+                                                AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+                                            },
+                                            bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                                        )
+                                        .size(
+                                            AppTheme.dimensions.baseTweet.gridImageSize,
+                                        ),
+                                    photo = photo,
+                                )
+                            }
                         }
                     }
                 }
 
                 else -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(IMAGE_SPAN_COUNT)
-                    ) {
-                        items(filteredList) { photo ->
-                            GridImageComponent(photo)
+                    filteredList.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                            val maxWidth = maxWidth
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                photos.forEachIndexed { index, photo ->
+                                    GridImageComponent(
+                                        modifier = Modifier
+                                            .padding(
+                                                start = if (index == 0) {
+                                                    AppTheme.dimensions.zero
+                                                } else {
+                                                    AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+                                                },
+                                                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                                            )
+                                            .size(
+                                                (maxWidth - (AppTheme.dimensions.paddingSpaceBetweenComponentsSmall * photos.size)) / IMAGE_SPAN_COUNT,
+                                            ),
+                                        photo = photo,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -277,15 +308,9 @@ fun TweetImages(images: List<ImagesBean>?) {
 }
 
 @Composable
-fun GridImageComponent(photo: String) {
+fun GridImageComponent(modifier: Modifier, photo: String) {
     SubcomposeAsyncImage(
-        modifier = Modifier
-            .size(
-                AppTheme.dimensions.baseTweet.gridImageSize,
-            )
-            .padding(
-                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsMediumX,
-            ),
+        modifier = modifier,
         contentScale = ContentScale.Crop,
         model = photo,
         loading = {
@@ -357,7 +382,7 @@ private fun MomentHeaderComponent(
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
             modifier = Modifier
                 .constrainAs(userNickname) {
-                    bottom.linkTo(parent.bottom)
+                    bottom.linkTo(userProfile.bottom)
                     end.linkTo(userAvatar.start)
                 }
                 .padding(

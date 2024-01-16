@@ -17,7 +17,7 @@ private const val TAG = "MainActivity##"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    val viewModel: MainViewModel by viewModels()
+//    val viewModel: MainViewModel by viewModels()
 
 //    private val adapter = MomentsAdapter()
 
