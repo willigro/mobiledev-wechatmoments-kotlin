@@ -1,12 +1,13 @@
 package com.tws.moments.viewmodels
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tws.moments.api.MomentRepository
 import com.tws.moments.api.entry.TweetBean
-import com.tws.moments.api.entry.UserBean
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.min
@@ -20,16 +21,21 @@ class MainViewModel @Inject constructor(
     private val repository: MomentRepository
 ) : ViewModel() {
 
-    val userBean: MutableLiveData<UserBean> by lazy {
-        MutableLiveData<UserBean>().also { loadUserInfo() }
+    private val _uiState: MutableStateFlow<MainUiState> = MutableStateFlow(MainUiState())
+    val uiState: StateFlow<MainUiState>
+        get() = _uiState
+
+    fun onEvent(event: MainEvent) {
+        when (event) {
+            MainEvent.FetchTweets -> {
+                loadTweets()
+            }
+
+            MainEvent.FetchUserBean -> {
+                loadUserInfo()
+            }
+        }
     }
-
-    val tweets: MutableLiveData<List<TweetBean>> by lazy {
-        MutableLiveData<List<TweetBean>>().also { loadTweets() }
-    }
-
-    private var allTweets: List<TweetBean>? = null
-
 
     private fun loadUserInfo() {
         viewModelScope.launch {
@@ -39,10 +45,12 @@ class MainViewModel @Inject constructor(
                 e.printStackTrace()
                 null
             }
-            userBean.value = result
+
+            _uiState.update {
+                it.copy(userBean = result)
+            }
         }
     }
-
 
     private fun loadTweets() {
         viewModelScope.launch {
@@ -53,12 +61,17 @@ class MainViewModel @Inject constructor(
                 null
             }
 
-            allTweets = result
-
-            if ((allTweets?.size ?: 0) > PAGE_TWEET_COUNT) {
-                tweets.value = allTweets?.subList(0, PAGE_TWEET_COUNT)
+            val tweets = if ((result?.size ?: 0) > PAGE_TWEET_COUNT) {
+                result?.subList(0, PAGE_TWEET_COUNT)
             } else {
-                tweets.value = allTweets
+                result
+            }
+
+            _uiState.update {
+                it.copy(
+                    allTweets = result,
+                    tweets = tweets,
+                )
             }
         }
     }
@@ -70,9 +83,9 @@ class MainViewModel @Inject constructor(
     val pageCount: Int
         get() {
             return when {
-                allTweets.isNullOrEmpty() -> 0
-                allTweets!!.size % PAGE_TWEET_COUNT == 0 -> allTweets!!.size / PAGE_TWEET_COUNT
-                else -> allTweets!!.size / PAGE_TWEET_COUNT + 1
+                _uiState.value.allTweets.isNullOrEmpty() -> 0
+                _uiState.value.allTweets!!.size % PAGE_TWEET_COUNT == 0 -> _uiState.value.allTweets!!.size / PAGE_TWEET_COUNT
+                else -> _uiState.value.allTweets!!.size / PAGE_TWEET_COUNT + 1
             }
         }
 
@@ -87,8 +100,8 @@ class MainViewModel @Inject constructor(
 
         viewModelScope.launch {
             val startIndex = PAGE_TWEET_COUNT * pageIndex
-            val endIndex = min(allTweets!!.size, PAGE_TWEET_COUNT * (pageIndex + 1))
-            val result = allTweets!!.subList(startIndex, endIndex)
+            val endIndex = min(_uiState.value.allTweets!!.size, PAGE_TWEET_COUNT * (pageIndex + 1))
+            val result = _uiState.value.allTweets!!.subList(startIndex, endIndex)
             onLoad(result)
         }
     }

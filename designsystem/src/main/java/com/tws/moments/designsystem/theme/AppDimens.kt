@@ -18,15 +18,26 @@ data class AppDimensions(
     val paddingMedium: Dp = 12.dp,
     val paddingLarge: Dp = 24.dp,
 
-    val paddingSpaceBetweenComponentsSmall: Dp = 6.dp,
-    val paddingSpaceBetweenComponentsSmallX: Dp = 14.dp,
-    val paddingSpaceBetweenComponentsMedium: Dp = 18.dp,
+    val paddingSpaceBetweenComponentsSmall: Dp = 5.dp,
+    val paddingSpaceBetweenComponentsSmallX: Dp = 10.dp,
+    val paddingSpaceBetweenComponentsMedium: Dp = 16.dp,
     val paddingSpaceBetweenComponentsMediumX: Dp = 22.dp,
     val paddingSpaceBetweenComponentsLarge: Dp = 26.dp,
 
     val dividerThickness: Dp = 2.dp,
 
     val borderThicknessSmall: Dp = 1.dp,
+
+    val baseTweet: BaseTweet = BaseTweet(),
+)
+
+data class BaseTweet(
+    val avatarSize: Dp = 40.dp,
+    val userProfileMinHeight: Dp = 200.dp,
+    val userAvatarSize: Dp = 70.dp,
+    val paddingTopSendNickname: Dp = 1.dp,
+    val paddingBottomComment: Dp = 5.dp,
+    val paddingBottomUserNickname: Dp = 5.dp,
 )
 
 internal val LocalDimensions = staticCompositionLocalOf { AppDimensions() }

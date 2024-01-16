@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="content_description_sender_avatar_image">Sender Avatar Image</string>
+    <string name="content_description_user_profile_image">User Profile Image</string>
+    <string name="content_description_user_avatar_image">User Avatar Image</string>
+</resources>

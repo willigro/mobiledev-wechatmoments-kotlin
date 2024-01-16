@@ -3,18 +3,14 @@ package com.tws.moments
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.tws.moments.adapters.MomentsAdapter
-import com.tws.moments.databinding.ActivityMainBinding
+import com.tws.moments.designsystem.theme.TwsMomentsTheme
+import com.tws.moments.ui.main.MainScreenRoot
 import com.tws.moments.utils.ScreenAdaptiveUtil
-import com.tws.moments.utils.dip
 import com.tws.moments.viewmodels.MainViewModel
-import com.tws.moments.views.LoadMoreListener
-import com.tws.moments.views.itemdecoration.MomentDividerItemDecoration
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "MainActivity##"
@@ -23,7 +19,7 @@ private const val TAG = "MainActivity##"
 class MainActivity : ComponentActivity() {
     val viewModel: MainViewModel by viewModels()
 
-    private val adapter = MomentsAdapter()
+//    private val adapter = MomentsAdapter()
 
     private var reqPageIndex = 1
 
@@ -32,55 +28,61 @@ class MainActivity : ComponentActivity() {
         initWindow()
 
         ScreenAdaptiveUtil.adaptive(this)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+//        binding = ActivityMainBinding.inflate(layoutInflater)
+//        setContentView(binding.root)
 
-        setupRecyclerView()
-        subscribe()
-    }
-
-    private fun setupRecyclerView() {
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.addItemDecoration(
-            MomentDividerItemDecoration(
-                offsets = dip(10),
-                dividerColor = Color.parseColor("#dddddd"),
-                startPosition = 1
-            )
-        )
-
-        binding.recyclerView.adapter = this.adapter
-
-        binding.swipeRefreshLayout.isRefreshing = true
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.refreshTweets()
-        }
-
-        binding.recyclerView.addOnScrollListener(object : LoadMoreListener() {
-            override fun onLoadMore() {
-                Log.i(TAG, "load more reqPageIndex:$reqPageIndex,pageCount:${viewModel.pageCount}")
-                if (reqPageIndex <= viewModel.pageCount - 1) {
-                    Log.i(TAG, "internal load more")
-                    viewModel.loadMoreTweets(reqPageIndex) {
-                        reqPageIndex++
-                        adapter.addMoreTweet(it)
-                    }
-                }
+        setContent {
+            TwsMomentsTheme {
+                MainScreenRoot()
             }
-        })
-    }
-
-    private fun subscribe() {
-        viewModel.userBean.observe(this) {
-            adapter.userBean = it
         }
 
-        viewModel.tweets.observe(this) {
-            binding.swipeRefreshLayout.isRefreshing = false
-            reqPageIndex = 1
-            adapter.tweets = it?.toMutableList()
-        }
+//        setupRecyclerView()
+//        subscribe()
     }
+
+//    private fun setupRecyclerView() {
+//        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+//        binding.recyclerView.addItemDecoration(
+//            MomentDividerItemDecoration(
+//                offsets = dip(10),
+//                dividerColor = Color.parseColor("#dddddd"),
+//                startPosition = 1
+//            )
+//        )
+//
+//        binding.recyclerView.adapter = this.adapter
+//
+//        binding.swipeRefreshLayout.isRefreshing = true
+//        binding.swipeRefreshLayout.setOnRefreshListener {
+//            viewModel.refreshTweets()
+//        }
+//
+//        binding.recyclerView.addOnScrollListener(object : LoadMoreListener() {
+//            override fun onLoadMore() {
+//                Log.i(TAG, "load more reqPageIndex:$reqPageIndex,pageCount:${viewModel.pageCount}")
+//                if (reqPageIndex <= viewModel.pageCount - 1) {
+//                    Log.i(TAG, "internal load more")
+//                    viewModel.loadMoreTweets(reqPageIndex) {
+//                        reqPageIndex++
+//                        adapter.addMoreTweet(it)
+//                    }
+//                }
+//            }
+//        })
+//    }
+//
+//    private fun subscribe() {
+//        viewModel.userBean.observe(this) {
+//            adapter.userBean = it
+//        }
+//
+//        viewModel.tweets.observe(this) {
+//            binding.swipeRefreshLayout.isRefreshing = false
+//            reqPageIndex = 1
+//            adapter.tweets = it?.toMutableList()
+//        }
+//    }
 
     private fun initWindow() {
         val flag = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
