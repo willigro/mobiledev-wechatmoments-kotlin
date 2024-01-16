@@ -132,7 +132,7 @@ private fun BaseTweetComponent(
 }
 
 @Composable
-fun MomentItemComponent(
+private fun MomentItemComponent(
     tweetBean: TweetBean,
 ) {
     Column(
@@ -233,7 +233,7 @@ fun MomentItemComponent(
 }
 
 @Composable
-fun TweetImages(images: List<ImagesBean>?) {
+private fun TweetImages(images: List<ImagesBean>?) {
     images
         ?.asSequence()
         ?.map { it.url ?: "" }
@@ -320,7 +320,7 @@ fun TweetImages(images: List<ImagesBean>?) {
 }
 
 @Composable
-fun GridImageComponent(modifier: Modifier, photo: String) {
+private fun GridImageComponent(modifier: Modifier, photo: String) {
     SubcomposeAsyncImage(
         modifier = modifier,
         contentScale = ContentScale.Crop,
