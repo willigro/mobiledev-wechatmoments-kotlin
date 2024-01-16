@@ -53,6 +53,12 @@ class MainViewModel @Inject constructor(
     }
 
     private fun loadTweets() {
+        _uiState.update {
+            it.copy(
+                isRefreshing = true,
+            )
+        }
+
         viewModelScope.launch {
             val result = try {
                 repository.fetchTweets()
@@ -71,6 +77,7 @@ class MainViewModel @Inject constructor(
                 it.copy(
                     allTweets = result,
                     tweets = tweets,
+                    isRefreshing = false,
                 )
             }
         }

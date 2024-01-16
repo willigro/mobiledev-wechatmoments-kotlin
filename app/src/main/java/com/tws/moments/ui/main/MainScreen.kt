@@ -46,7 +46,6 @@ import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.viewmodels.MainEvent
 import com.tws.moments.viewmodels.MainUiState
 import com.tws.moments.viewmodels.MainViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainScreen##"
@@ -89,10 +88,6 @@ private fun MainScreen(
         state = swipeRefreshState,
         onRefresh = {
             coroutineScope.launch {
-                swipeRefreshState.isRefreshing = true
-
-                delay(1000)
-
                 onEvent(
                     MainEvent.FetchTweets
                 )
