@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.tws.moments.designsystem.theme.AppTheme
 
 @Composable
@@ -17,6 +18,6 @@ fun DivisorHorizontal(
         modifier = modifier
             .fillMaxWidth()
             .height(AppTheme.dimensions.dividerThickness)
-            .background(MaterialTheme.colorScheme.onSurface)
+            .background(Color(0xFFCDCDCD)) // TODO (rittmann) move it to material
     )
 }
