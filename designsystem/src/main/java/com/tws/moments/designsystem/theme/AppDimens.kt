@@ -21,7 +21,7 @@ data class AppDimensions(
     val paddingSpaceBetweenComponentsSmall: Dp = 5.dp,
     val paddingSpaceBetweenComponentsSmallX: Dp = 10.dp,
     val paddingSpaceBetweenComponentsMedium: Dp = 16.dp,
-    val paddingSpaceBetweenComponentsMediumX: Dp = 22.dp,
+    val paddingSpaceBetweenComponentsMediumX: Dp = 20.dp,
     val paddingSpaceBetweenComponentsLarge: Dp = 26.dp,
 
     val dividerThickness: Dp = 1.dp,

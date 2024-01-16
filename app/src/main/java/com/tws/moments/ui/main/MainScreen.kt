@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +27,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
 import com.tws.moments.api.entry.CommentsBean
 import com.tws.moments.api.entry.TweetBean
+import com.tws.moments.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.viewmodels.MainEvent
@@ -81,9 +83,16 @@ private fun MainScreen(
             }
         },
     ) {
-        LazyColumn {
-            items(uiState.tweets.orEmpty()) { tweet ->
-                BaseTweetComponent(tweetBean = tweet)
+        // TODO (rittmann) can separate Item and Head of multiple ways, but I'm going to keep it for now
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            itemsIndexed(uiState.tweets.orEmpty()) { index, tweet ->
+                BaseTweetComponent(
+                    tweetBean = tweet,
+                    isHead = index == 0,
+                    userBean = uiState.userBean,
+                )
             }
         }
     }
@@ -91,6 +100,20 @@ private fun MainScreen(
 
 @Composable
 private fun BaseTweetComponent(
+    userBean: UserBean?,
+    tweetBean: TweetBean,
+    isHead: Boolean,
+) {
+    if (isHead) {
+        MomentHeaderComponent(userBean = userBean)
+    } else {
+        MomentItemComponent(tweetBean = tweetBean)
+    }
+
+}
+
+@Composable
+fun MomentItemComponent(
     tweetBean: TweetBean,
 ) {
     Column(
@@ -177,19 +200,9 @@ private fun BaseTweetComponent(
 }
 
 @Composable
-private fun CommentComponent(commentsBean: CommentsBean) {
-    Text(
-        text = commentsBean.content.orEmpty(),
-        modifier = Modifier
-            .padding(
-                start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
-            )
-    )
-}
-
-@Composable
-private fun MomentHeadComponent() {
+private fun MomentHeaderComponent(
+    userBean: UserBean?,
+) {
     ConstraintLayout(
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -198,13 +211,16 @@ private fun MomentHeadComponent() {
 
         SubcomposeAsyncImage(
             modifier = Modifier
-                .fillMaxWidth()
                 .constrainAs(userProfile) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                 }
-                .defaultMinSize(minHeight = AppTheme.dimensions.baseTweet.userProfileMinHeight),
-            model = "",
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = AppTheme.dimensions.baseTweet.userProfileMinHeight)
+                .padding(
+                    bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsMediumX,
+                ),
+            model = userBean?.profileImage,
             loading = {
                 Box(
                     modifier = Modifier
@@ -217,14 +233,15 @@ private fun MomentHeadComponent() {
 
         SubcomposeAsyncImage(
             modifier = Modifier
-                .fillMaxWidth()
                 .constrainAs(userAvatar) {
                     bottom.linkTo(parent.bottom)
                     end.linkTo(parent.end)
                 }
                 .size(AppTheme.dimensions.baseTweet.userAvatarSize)
-                .padding(AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX),
-            model = "",
+                .padding(
+                    end = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX
+                ),
+            model = userBean?.avatar,
             loading = {
                 Box(
                     modifier = Modifier
@@ -236,7 +253,7 @@ private fun MomentHeadComponent() {
         )
 
         Text(
-            text = "",
+            text = userBean?.nick.orEmpty(),
             modifier = Modifier
                 .constrainAs(userNickname) {
                     bottom.linkTo(parent.bottom)
@@ -249,6 +266,19 @@ private fun MomentHeadComponent() {
         )
     }
 }
+
+@Composable
+private fun CommentComponent(commentsBean: CommentsBean) {
+    Text(
+        text = commentsBean.content.orEmpty(),
+        modifier = Modifier
+            .padding(
+                start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
+            )
+    )
+}
+
 
 //@Preview
 //@Composable
