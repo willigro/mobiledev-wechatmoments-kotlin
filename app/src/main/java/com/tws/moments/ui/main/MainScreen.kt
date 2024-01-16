@@ -1,5 +1,6 @@
 package com.tws.moments.ui.main
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,8 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,12 +42,14 @@ import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
+import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.viewmodels.MainEvent
 import com.tws.moments.viewmodels.MainUiState
 import com.tws.moments.viewmodels.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private const val TAG = "MainScreen##"
 private const val IMAGE_SPAN_COUNT = 3
 
 @Composable
@@ -150,7 +157,6 @@ fun MomentItemComponent(
                 loading = {
                     Box(
                         modifier = Modifier
-                            .size(AppTheme.dimensions.baseTweet.avatarSize)
                             .background(Color.LightGray)
                     )
                 },
@@ -159,6 +165,7 @@ fun MomentItemComponent(
 
             Text(
                 text = tweetBean.sender?.nick.orEmpty(),
+                color = Color(0xFF4152C9), // TODO (rittmann) move to material
                 modifier = Modifier
                     .constrainAs(senderNickname) {
                         top.linkTo(senderAvatar.top)
@@ -184,7 +191,9 @@ fun MomentItemComponent(
             ) {
                 Text(
                     text = tweetBean.content.orEmpty(),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color(0xFF333333) // TODO (rittmann) move to material
+                    ),
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -203,6 +212,10 @@ fun MomentItemComponent(
                     }
                     .padding(
                         top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+                    )
+                    .background(
+                        color = Color(0xFFF0F0F0), // TODO (rittmann) move to material
+                        shape = RoundedCornerShapeSmall,
                     ),
             ) {
                 tweetBean.comments?.forEach { comments ->
@@ -245,8 +258,7 @@ fun TweetImages(images: List<ImagesBean>?) {
                         loading = {
                             Box(
                                 modifier = Modifier
-                                    .size(AppTheme.dimensions.baseTweet.avatarSize)
-                                    .background(Color.LightGray)
+                                    .background(Color.LightGray) // TODO (rittmann) move to material
                             )
                         },
                         contentDescription = stringResource(R.string.content_description_tweet_picture_image)
@@ -316,8 +328,7 @@ fun GridImageComponent(modifier: Modifier, photo: String) {
         loading = {
             Box(
                 modifier = Modifier
-                    .size(AppTheme.dimensions.baseTweet.avatarSize)
-                    .background(Color.LightGray)
+                    .background(Color.LightGray) // TODO (rittmann) move to material
             )
         },
         contentDescription = stringResource(R.string.content_description_tweet_picture_image)
@@ -349,8 +360,7 @@ private fun MomentHeaderComponent(
             loading = {
                 Box(
                     modifier = Modifier
-                        .size(AppTheme.dimensions.baseTweet.avatarSize)
-                        .background(Color.LightGray)
+                        .background(Color.LightGray) // TODO (rittmann) move to material
                 )
             },
             contentDescription = stringResource(R.string.content_description_user_profile_image)
@@ -370,8 +380,7 @@ private fun MomentHeaderComponent(
             loading = {
                 Box(
                     modifier = Modifier
-                        .size(AppTheme.dimensions.baseTweet.avatarSize)
-                        .background(Color.LightGray)
+                        .background(Color.LightGray) // TODO (rittmann) move to material
                 )
             },
             contentDescription = stringResource(R.string.content_description_user_profile_image)
@@ -395,15 +404,37 @@ private fun MomentHeaderComponent(
 
 @Composable
 private fun CommentComponent(commentsBean: CommentsBean) {
-    Text(
-        text = commentsBean.content.orEmpty(),
-        style = MaterialTheme.typography.bodyMedium,
+    val nick = commentsBean.sender?.nick.orEmpty()
+
+    val annotatedString = buildAnnotatedString {
+        withStyle(
+            style = SpanStyle(
+                color = Color(0xFF4152C9), // TODO (rittmann) move to material
+                fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
+            )
+        ) {
+            pushStringAnnotation(nick, annotation = nick)
+            append(nick)
+        }
+
+        append(": ${commentsBean.content.orEmpty()}")
+    }
+
+    ClickableText(
         modifier = Modifier
             .padding(
                 start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
                 bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
             ),
-    )
+        text = annotatedString,
+    ) { offset ->
+        annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let {
+            // TODO (rittmann) add smt like an animation to react to the click
+            Log.i(TAG, "Clicked")
+        }
+    }
 }
 
 
