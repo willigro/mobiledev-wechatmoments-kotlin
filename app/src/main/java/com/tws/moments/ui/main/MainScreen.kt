@@ -26,6 +26,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
 import com.tws.moments.api.entry.CommentsBean
 import com.tws.moments.api.entry.TweetBean
+import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.viewmodels.MainEvent
 import com.tws.moments.viewmodels.MainUiState
@@ -92,92 +93,86 @@ private fun MainScreen(
 private fun BaseTweetComponent(
     tweetBean: TweetBean,
 ) {
-    ConstraintLayout(
+    Column(
         modifier = Modifier.fillMaxWidth(),
     ) {
-        val (senderAvatar, senderNickname, tweetContent, comments) = createRefs()
-
-        SubcomposeAsyncImage(
-            modifier = Modifier
-                .constrainAs(senderAvatar) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                }
-                .size(AppTheme.dimensions.baseTweet.avatarSize),
-            model = tweetBean.sender?.avatar,
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .size(AppTheme.dimensions.baseTweet.avatarSize)
-                        .background(Color.LightGray)
-                )
-            },
-            contentDescription = stringResource(R.string.content_description_sender_avatar_image)
-        )
-
-        Text(
-            text = tweetBean.sender?.nick.orEmpty(),
-            modifier = Modifier
-                .constrainAs(senderNickname) {
-                    top.linkTo(senderAvatar.top)
-                    start.linkTo(senderAvatar.end)
-                }
-                .padding(
-                    start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-                    top = AppTheme.dimensions.baseTweet.paddingTopSendNickname,
-                )
-        )
-
-        Column(
-            modifier = Modifier
-                .constrainAs(tweetContent) {
-                    top.linkTo(senderNickname.bottom)
-                    start.linkTo(senderNickname.start)
-                    end.linkTo(parent.end)
-                }
-                .padding(
-                    end = AppTheme.dimensions.paddingSpaceBetweenComponentsMedium,
-                )
+        ConstraintLayout(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(
-                text = tweetBean.content.orEmpty(),
-                maxLines = 5,
+            val (senderAvatar, senderNickname, tweetContent, comments) = createRefs()
+
+            SubcomposeAsyncImage(
+                modifier = Modifier
+                    .constrainAs(senderAvatar) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                    }
+                    .size(AppTheme.dimensions.baseTweet.avatarSize),
+                model = tweetBean.sender?.avatar,
+                loading = {
+                    Box(
+                        modifier = Modifier
+                            .size(AppTheme.dimensions.baseTweet.avatarSize)
+                            .background(Color.LightGray)
+                    )
+                },
+                contentDescription = stringResource(R.string.content_description_sender_avatar_image)
             )
-        }
 
-        Column(
-            modifier = Modifier
-                .constrainAs(comments) {
-                    top.linkTo(tweetContent.bottom)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(tweetContent.start)
-                    end.linkTo(parent.end)
-                }
-                .padding(
-                    top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-                ),
+            Text(
+                text = tweetBean.sender?.nick.orEmpty(),
+                modifier = Modifier
+                    .constrainAs(senderNickname) {
+                        top.linkTo(senderAvatar.top)
+                        start.linkTo(senderAvatar.end)
+                    }
+                    .padding(
+                        start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+                        top = AppTheme.dimensions.baseTweet.paddingTopSendNickname,
+                    )
+            )
 
+            Column(
+                modifier = Modifier
+                    .constrainAs(tweetContent) {
+                        top.linkTo(senderNickname.bottom)
+                        start.linkTo(senderNickname.start)
+                        end.linkTo(parent.end)
+                    }
+                    .padding(
+                        end = AppTheme.dimensions.paddingSpaceBetweenComponentsMedium,
+                    )
             ) {
-            tweetBean.comments?.forEach { comments ->
-                CommentComponent(commentsBean = comments)
+                Text(
+                    text = tweetBean.content.orEmpty(),
+                    maxLines = 5,
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .constrainAs(comments) {
+                        top.linkTo(tweetContent.bottom)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(tweetContent.start)
+                        end.linkTo(parent.end)
+                    }
+                    .padding(
+                        top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+                    ),
+
+                ) {
+                tweetBean.comments?.forEach { comments ->
+                    CommentComponent(commentsBean = comments)
+                }
             }
         }
-//        LazyColumn(
-//            modifier = Modifier
-//                .constrainAs(comments) {
-//                    top.linkTo(tweetContent.bottom)
-//                    bottom.linkTo(parent.bottom)
-//                    start.linkTo(tweetContent.start)
-//                    end.linkTo(parent.end)
-//                }
-//                .padding(
-//                    top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-//                ),
-//        ) {
-//            items(tweetBean.comments.orEmpty()) { comment ->
-//                CommentComponent(commentsBean = comment)
-//            }
-//        }
+
+        DivisorHorizontal(
+            modifier = Modifier.padding(
+                top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+            )
+        )
     }
 }
 

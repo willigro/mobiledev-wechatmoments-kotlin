@@ -24,9 +24,7 @@ data class AppDimensions(
     val paddingSpaceBetweenComponentsMediumX: Dp = 22.dp,
     val paddingSpaceBetweenComponentsLarge: Dp = 26.dp,
 
-    val dividerThickness: Dp = 2.dp,
-
-    val borderThicknessSmall: Dp = 1.dp,
+    val dividerThickness: Dp = 1.dp,
 
     val baseTweet: BaseTweet = BaseTweet(),
 )
