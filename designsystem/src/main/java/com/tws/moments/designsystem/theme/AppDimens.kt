@@ -36,6 +36,9 @@ data class BaseTweet(
     val paddingTopSendNickname: Dp = 1.dp,
     val paddingBottomComment: Dp = 5.dp,
     val paddingBottomUserNickname: Dp = 5.dp,
+    val singleImageWidth: Dp = 100.dp,
+    val singleImageHeight: Dp = 150.dp,
+    val gridImageSize: Dp = 94.dp,
 )
 
 internal val LocalDimensions = staticCompositionLocalOf { AppDimensions() }

@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,6 +33,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
 import com.tws.moments.api.entry.CommentsBean
+import com.tws.moments.api.entry.ImagesBean
 import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
@@ -38,6 +43,8 @@ import com.tws.moments.viewmodels.MainUiState
 import com.tws.moments.viewmodels.MainViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private const val IMAGE_SPAN_COUNT = 3
 
 @Composable
 fun MainScreenRoot(
@@ -175,6 +182,8 @@ fun MomentItemComponent(
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
                 )
+
+                TweetImages(images = tweetBean.images)
             }
 
             Column(
@@ -208,6 +217,86 @@ fun MomentItemComponent(
             )
         )
     }
+}
+
+@Composable
+fun TweetImages(images: List<ImagesBean>?) {
+    images
+        ?.asSequence()
+        ?.map { it.url ?: "" }
+        ?.filter { it.isNotEmpty() }
+        ?.toList()
+        ?.also { filteredList ->
+            when (filteredList.size) {
+                1 -> {
+                    // TODO (rittmann) apply this calc to the size, see [SingleImageView]
+                    // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
+                    SubcomposeAsyncImage(
+                        modifier = Modifier
+                            .size(
+                                width = AppTheme.dimensions.baseTweet.singleImageWidth,
+                                height = AppTheme.dimensions.baseTweet.singleImageHeight,
+                            )
+                            .padding(
+                                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsMediumX,
+                            ),
+                        contentScale = ContentScale.Crop,
+                        model = filteredList[0],
+                        loading = {
+                            Box(
+                                modifier = Modifier
+                                    .size(AppTheme.dimensions.baseTweet.avatarSize)
+                                    .background(Color.LightGray)
+                            )
+                        },
+                        contentDescription = stringResource(R.string.content_description_tweet_picture_image)
+                    )
+                }
+
+                4 -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2)
+                    ) {
+                        items(filteredList) { photo ->
+                            GridImageComponent(photo)
+                        }
+                    }
+                }
+
+                else -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(IMAGE_SPAN_COUNT)
+                    ) {
+                        items(filteredList) { photo ->
+                            GridImageComponent(photo)
+                        }
+                    }
+                }
+            }
+        }
+}
+
+@Composable
+fun GridImageComponent(photo: String) {
+    SubcomposeAsyncImage(
+        modifier = Modifier
+            .size(
+                AppTheme.dimensions.baseTweet.gridImageSize,
+            )
+            .padding(
+                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsMediumX,
+            ),
+        contentScale = ContentScale.Crop,
+        model = photo,
+        loading = {
+            Box(
+                modifier = Modifier
+                    .size(AppTheme.dimensions.baseTweet.avatarSize)
+                    .background(Color.LightGray)
+            )
+        },
+        contentDescription = stringResource(R.string.content_description_tweet_picture_image)
+    )
 }
 
 @Composable
