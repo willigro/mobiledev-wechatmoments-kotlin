@@ -1,4 +1,4 @@
-package com.tws.moments.viewmodels
+package com.tws.moments.ui.main
 
 sealed interface MainEvent {
     data object FetchUserBean: MainEvent

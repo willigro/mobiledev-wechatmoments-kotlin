@@ -43,9 +43,9 @@ import com.tws.moments.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
-import com.tws.moments.viewmodels.MainEvent
-import com.tws.moments.viewmodels.MainUiState
-import com.tws.moments.viewmodels.MainViewModel
+import com.tws.moments.ui.main.MainEvent
+import com.tws.moments.ui.main.MainUiState
+import com.tws.moments.ui.main.MainViewModel
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainScreen##"
