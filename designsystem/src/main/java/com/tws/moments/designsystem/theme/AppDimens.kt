@@ -35,7 +35,7 @@ data class BaseTweet(
     val userAvatarSize: Dp = 70.dp,
     val paddingTopSendNickname: Dp = 1.dp,
     val paddingBottomComment: Dp = 5.dp,
-    val paddingBottomUserNickname: Dp = 5.dp,
+    val paddingBottomUserNickname: Dp = 25.dp ,
     val singleImageWidth: Dp = 100.dp,
     val singleImageHeight: Dp = 150.dp,
     val gridImageSize: Dp = 94.dp,

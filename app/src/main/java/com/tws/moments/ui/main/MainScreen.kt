@@ -395,7 +395,10 @@ private fun MomentHeaderComponent(
 
         Text(
             text = userBean?.nick.orEmpty(),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = Color.White, // TODO (rittmann) move to material
+                fontWeight = FontWeight.Normal
+            ),
             modifier = Modifier
                 .constrainAs(userNickname) {
                     bottom.linkTo(userProfile.bottom)
