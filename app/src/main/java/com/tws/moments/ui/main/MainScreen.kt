@@ -104,6 +104,15 @@ private fun MainScreen(
                     isHead = index == 0,
                     userBean = uiState.userBean,
                 )
+
+                // Is not loading more data and it is the last item
+                if(uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
+                    Log.i(TAG, "Loading more")
+
+                    onEvent(
+                        MainEvent.FetchMoreTweets
+                    )
+                }
             }
         }
     }

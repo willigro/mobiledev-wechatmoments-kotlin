@@ -1,5 +1,6 @@
 package com.tws.moments.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tws.moments.api.MomentRepository
@@ -25,6 +26,8 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainUiState>
         get() = _uiState
 
+    private var reqPageIndex = 1
+
     fun onEvent(event: MainEvent) {
         when (event) {
             MainEvent.FetchTweets -> {
@@ -33,6 +36,34 @@ class MainViewModel @Inject constructor(
 
             MainEvent.FetchUserBean -> {
                 loadUserInfo()
+            }
+
+            MainEvent.FetchMoreTweets -> {
+                fetchMoreTweets()
+            }
+        }
+    }
+
+    private fun fetchMoreTweets() {
+        if (reqPageIndex <= pageCount - 1) {
+            _uiState.update { it.copy(isFetchingMore = true) }
+
+            Log.i(TAG, "internal load more")
+
+            loadMoreTweets(reqPageIndex) { result ->
+                result?.also {
+                    reqPageIndex++
+
+                    _uiState.update { state ->
+                        state.copy(
+                            tweets = arrayListOf<TweetBean>().apply {
+                                state.tweets?.let { tweets -> addAll(tweets) }
+                                addAll(result)
+                            },
+                            isFetchingMore = false,
+                        )
+                    }
+                }
             }
         }
     }
@@ -96,7 +127,7 @@ class MainViewModel @Inject constructor(
             }
         }
 
-    fun loadMoreTweets(pageIndex: Int, onLoad: (List<TweetBean>?) -> Unit) {
+    private fun loadMoreTweets(pageIndex: Int, onLoad: (List<TweetBean>?) -> Unit) {
         if (pageIndex < 0) {
             throw IllegalArgumentException("page index must greater than or equal to 0.")
         }
