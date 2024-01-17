@@ -1,7 +1,8 @@
-package com.tws.moments.api
+package com.tws.moments.repository
 
 import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.api.entry.UserBean
+import com.tws.moments.api.reqApi
 import javax.inject.Inject
 
 interface MomentRepository {

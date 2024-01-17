@@ -3,7 +3,7 @@ package com.tws.moments.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tws.moments.api.MomentRepository
+import com.tws.moments.repository.MomentRepository
 import com.tws.moments.api.entry.TweetBean
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
