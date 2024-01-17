@@ -106,7 +106,7 @@ private fun MainScreen(
                 )
 
                 // Is not loading more data and it is the last item
-                if(uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
+                if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
                     Log.i(TAG, "Loading more")
 
                     onEvent(
@@ -142,7 +142,7 @@ private fun MomentItemComponent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall)
+            .padding(top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX)
             .padding(horizontal = AppTheme.dimensions.paddingScreenDefault),
     ) {
         ConstraintLayout(
@@ -200,6 +200,9 @@ private fun MomentItemComponent(
                     ),
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(
+                        bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+                    )
                 )
 
                 TweetImages(images = tweetBean.images)
@@ -255,7 +258,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                                 height = AppTheme.dimensions.baseTweet.singleImageHeight,
                             )
                             .padding(
-                                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsMediumX,
+                                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
                             ),
                         contentScale = ContentScale.Crop,
                         model = filteredList[0],
