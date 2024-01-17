@@ -1,6 +1,5 @@
 package com.tws.moments.api.di
 
-import android.app.Application
 import android.content.Context
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.tws.moments.api.MomentService

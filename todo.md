@@ -1,5 +1,3 @@
-# TODO
-
 ### Tests
 - Unit tests
 - Integration tests
@@ -7,9 +5,12 @@
 
 ### Network
 - Log interceptor
-- Cache interceptor
+[x] Cache interceptor
 - Timeout interceptor
 - Connection interceptor
 
 ### UseCase
-- Map network DTO to View DTO, removing unncessary items and data
+- Map network DTO to View DTO, removing unnecessary items and data
+
+### Lint
+- Add lint
