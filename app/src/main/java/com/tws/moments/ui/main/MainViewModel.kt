@@ -3,8 +3,8 @@ package com.tws.moments.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tws.moments.repository.MomentRepository
 import com.tws.moments.api.entry.TweetBean
+import com.tws.moments.usecase.MomentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +18,7 @@ private const val PAGE_TWEET_COUNT = 5
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repository: MomentRepository
+    private val useCase: MomentsUseCase,
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<MainUiState> = MutableStateFlow(MainUiState())
@@ -69,15 +69,8 @@ class MainViewModel @Inject constructor(
 
     private fun loadUserInfo() {
         viewModelScope.launch {
-            val result = try {
-                repository.fetchUser()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-
             _uiState.update {
-                it.copy(userBean = result)
+                it.copy(userBean = useCase.fetchUser())
             }
         }
     }
@@ -90,12 +83,7 @@ class MainViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val result = try {
-                repository.fetchTweets()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
+            val result = useCase.fetchTweets()
 
             val tweets = if ((result?.size ?: 0) > PAGE_TWEET_COUNT) {
                 result?.subList(0, PAGE_TWEET_COUNT)
@@ -142,5 +130,4 @@ class MainViewModel @Inject constructor(
             onLoad(result)
         }
     }
-
 }
