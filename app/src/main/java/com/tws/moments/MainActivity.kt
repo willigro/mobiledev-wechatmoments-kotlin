@@ -8,7 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import com.tws.moments.ui.main.MainScreenRoot
-import com.tws.moments.utils.ScreenAdaptiveUtil
+import com.tws.moments.designsystem.utils.ScreenAdaptiveUtil
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "MainActivity##"
