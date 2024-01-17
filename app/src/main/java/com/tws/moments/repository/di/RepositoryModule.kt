@@ -1,5 +1,6 @@
 package com.tws.moments.repository.di
 
+import com.tws.moments.api.MomentService
 import com.tws.moments.repository.MomentRepository
 import com.tws.moments.repository.MomentRepositoryImpl
 import dagger.Module
@@ -14,5 +15,7 @@ class RepositoryModule {
 
     @Singleton
     @Provides
-    fun providesMomentRepository(): MomentRepository = MomentRepositoryImpl()
+    fun providesMomentRepository(
+        momentService: MomentService
+    ): MomentRepository = MomentRepositoryImpl(momentService)
 }

@@ -3,8 +3,9 @@ package com.tws.moments.viewmodels
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import com.tws.moments.api.MomentRepository
+import com.tws.moments.repository.MomentRepository
 import com.tws.moments.api.entry.TweetBean
+import com.tws.moments.ui.main.MainViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
