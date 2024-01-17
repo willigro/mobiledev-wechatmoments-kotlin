@@ -51,14 +51,14 @@ class MainViewModel @Inject constructor(
             Log.i(TAG, "internal load more")
 
             loadMoreTweets(reqPageIndex) { result ->
-                result?.also {
+                result?.filter { it.noError() }?.also {filteredResult ->
                     reqPageIndex++
 
                     _uiState.update { state ->
                         state.copy(
                             tweets = arrayListOf<TweetBean>().apply {
                                 state.tweets?.let { tweets -> addAll(tweets) }
-                                addAll(result)
+                                addAll(filteredResult)
                             },
                             isFetchingMore = false,
                         )
@@ -104,10 +104,10 @@ class MainViewModel @Inject constructor(
                 result
             }
 
-            _uiState.update {
-                it.copy(
+            _uiState.update { state ->
+                state.copy(
                     allTweets = result,
-                    tweets = tweets,
+                    tweets = tweets?.filter { it.noError() },
                     isRefreshing = false,
                 )
             }
@@ -118,7 +118,7 @@ class MainViewModel @Inject constructor(
         loadTweets()
     }
 
-    val pageCount: Int
+    private val pageCount: Int
         get() {
             return when {
                 _uiState.value.allTweets.isNullOrEmpty() -> 0
