@@ -31,8 +31,6 @@ class MainActivity : ComponentActivity() {
     private fun initWindow() {
         val flag = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         window.decorView.systemUiVisibility = flag
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.statusBarColor = Color.TRANSPARENT
-        }
+        window.statusBarColor = Color.TRANSPARENT
     }
 }

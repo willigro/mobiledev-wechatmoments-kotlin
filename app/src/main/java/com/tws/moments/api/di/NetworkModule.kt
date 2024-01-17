@@ -28,7 +28,7 @@ class NetworkModule {
         @ApplicationContext context: Context,
     ): Interceptor {
         return Interceptor { chain ->
-            var request = chain.proceed(chain.request())
+            val request = chain.proceed(chain.request())
 
             if (hasNetwork(context) == true) {
                 val cacheControl = CacheControl.Builder()
