@@ -2,6 +2,7 @@ package com.tws.moments.ui.main
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -17,9 +18,13 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -235,15 +240,72 @@ private fun MomentItemComponent(
                     CommentComponent(commentsBean = comments)
                 }
 
-                // TODO textInput, I'm mock the comment
-                Button(
-                    onClick = {
-                        onEvent(
-                            MainEvent.ShareNewComment(tweetBean)
+                val showCommentArea = remember {
+                    mutableStateOf(false)
+                }
+
+                if (showCommentArea.value) {
+                    ConstraintLayout(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        val (input, button) = createRefs()
+
+                        // TODO (rittmann) update the comment using the an Event? or keep it he?
+                        val comment = remember { mutableStateOf("") }
+
+                        CommentTextArea(
+                            modifier = Modifier
+                                .constrainAs(input) {
+                                    top.linkTo(parent.top)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                }
+                                .fillMaxWidth(),
+                            comment = comment,
                         )
+
+                        Button(
+                            modifier = Modifier.constrainAs(button) {
+                                top.linkTo(input.bottom)
+                                end.linkTo(parent.end)
+                            },
+                            onClick = {
+                                onEvent(
+                                    MainEvent.ShareNewComment(tweetBean, comment.value)
+                                )
+
+                                // TODO (rittmann) clear after successfully create the comment?
+                                comment.value = ""
+                            }
+                        ) {
+                            Text(text = "Comment")
+                        }
                     }
-                ) {
-                    Text(text = "Comment")
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        ClickableText(
+                            modifier = Modifier.padding(
+                                AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+                            ),
+                            text = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = Color(0xFFC21149), // TODO (rittmann) move to material
+                                        fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
+                                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                        letterSpacing = MaterialTheme.typography.bodySmall.letterSpacing,
+                                    )
+                                ) {
+                                    append("Share a comment")
+                                }
+                            }
+                        ) {
+                            showCommentArea.value = true
+                        }
+                    }
                 }
             }
         }
@@ -254,6 +316,18 @@ private fun MomentItemComponent(
             )
         )
     }
+}
+
+@Composable
+fun CommentTextArea(
+    modifier: Modifier,
+    comment: MutableState<String>,
+) {
+    TextField(
+        modifier = modifier,
+        value = comment.value,
+        onValueChange = { comment.value = it },
+    )
 }
 
 @Composable

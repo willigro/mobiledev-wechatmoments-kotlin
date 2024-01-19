@@ -44,14 +44,14 @@ class MainViewModel @Inject constructor(
             }
 
             is MainEvent.ShareNewComment -> {
-                shareNewComment(event.tweetBean)
+                shareNewComment(event.tweetBean, event.comment)
             }
         }
     }
 
-    private fun shareNewComment(tweetBean: TweetBean) {
-        val comment = CommentsBean(
-            content = "Testing",
+    private fun shareNewComment(tweetBean: TweetBean, comment: String) {
+        val commentBean = CommentsBean(
+            content = comment,
             sender = SenderBean("nick", null, null),
         )
 
@@ -63,7 +63,7 @@ class MainViewModel @Inject constructor(
                     if (index > -1) {
                         if (tweetBean.comments == null) {
                             this[index] = this[index].copy(
-                                comments = arrayListOf(comment)
+                                comments = arrayListOf(commentBean)
                             )
                         } else {
                             this[index] = this[index].copy(
@@ -71,7 +71,7 @@ class MainViewModel @Inject constructor(
                                     if (tweetBean.comments.isNullOrEmpty().not()) {
                                         addAll(tweetBean.comments!!)
                                     }
-                                    add(comment)
+                                    add(commentBean)
                                 }
                             )
                         }
