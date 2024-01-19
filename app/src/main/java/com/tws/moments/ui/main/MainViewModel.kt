@@ -3,6 +3,8 @@ package com.tws.moments.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tws.moments.api.entry.CommentsBean
+import com.tws.moments.api.entry.SenderBean
 import com.tws.moments.api.entry.TweetBean
 import com.tws.moments.usecase.MomentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +42,36 @@ class MainViewModel @Inject constructor(
             MainEvent.FetchMoreTweets -> {
                 fetchMoreTweets()
             }
+
+            is MainEvent.ShareNewComment -> {
+                shareNewComment(event.tweetBean, event.index)
+            }
+        }
+    }
+
+    private fun shareNewComment(tweetBean: TweetBean, index: Int) {
+        val comment = CommentsBean(
+            content = "Testing",
+            sender = SenderBean("nick", null, null),
+        )
+
+        _uiState.update { state ->
+            state.copy(
+                tweets = state.tweets?.toMutableList()?.apply {
+                    if (tweetBean.comments == null) {
+                        this[index] = this[index].copy(
+                            comments = arrayListOf(comment)
+                        )
+                    } else {
+                        this[index] = this[index].copy(
+                            comments = arrayListOf<CommentsBean>().apply {
+                                addAll(tweetBean.comments)
+                                add(comment)
+                            }
+                        )
+                    }
+                }
+            )
         }
     }
 

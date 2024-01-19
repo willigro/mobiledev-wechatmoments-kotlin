@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,9 +44,6 @@ import com.tws.moments.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
-import com.tws.moments.ui.main.MainEvent
-import com.tws.moments.ui.main.MainUiState
-import com.tws.moments.ui.main.MainViewModel
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainScreen##"
@@ -94,7 +92,6 @@ private fun MainScreen(
             }
         },
     ) {
-        // TODO (rittmann) can separate Item and Head of multiple ways, but I'm going to keep it for now
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -103,6 +100,8 @@ private fun MainScreen(
                     tweetBean = tweet,
                     isHead = index == 0,
                     userBean = uiState.userBean,
+                    index = index,
+                    onEvent = onEvent,
                 )
 
                 // Is not loading more data and it is the last item
@@ -123,14 +122,16 @@ private fun BaseTweetComponent(
     userBean: UserBean?,
     tweetBean: TweetBean,
     isHead: Boolean,
+    index: Int,
+    onEvent: (MainEvent) -> Unit,
 ) {
     if (isHead) {
         Column(modifier = Modifier.fillMaxWidth()) {
             MomentHeaderComponent(userBean = userBean)
-            MomentItemComponent(tweetBean = tweetBean)
+            MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent, index = index)
         }
     } else {
-        MomentItemComponent(tweetBean = tweetBean)
+        MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent, index = index)
     }
 
 }
@@ -138,6 +139,8 @@ private fun BaseTweetComponent(
 @Composable
 private fun MomentItemComponent(
     tweetBean: TweetBean,
+    index: Int,
+    onEvent: (MainEvent) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -227,6 +230,17 @@ private fun MomentItemComponent(
             ) {
                 tweetBean.comments?.forEach { comments ->
                     CommentComponent(commentsBean = comments)
+                }
+
+                // TODO textInput, I'm mock the comment
+                Button(
+                    onClick = {
+                        onEvent(
+                            MainEvent.ShareNewComment(tweetBean, index)
+                        )
+                    }
+                ) {
+                    Text(text = "Comment")
                 }
             }
         }
@@ -446,10 +460,3 @@ private fun CommentComponent(commentsBean: CommentsBean) {
         }
     }
 }
-
-
-//@Preview
-//@Composable
-//fun MainScreen_Preview() {
-//
-//}

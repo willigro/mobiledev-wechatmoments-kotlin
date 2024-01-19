@@ -1,14 +1,13 @@
 package com.tws.moments
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
-import com.tws.moments.ui.main.MainScreenRoot
 import com.tws.moments.designsystem.utils.ScreenAdaptiveUtil
+import com.tws.moments.ui.main.MainScreenRoot
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "MainActivity##"
