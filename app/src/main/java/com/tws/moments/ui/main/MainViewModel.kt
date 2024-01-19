@@ -1,6 +1,5 @@
 package com.tws.moments.ui.main
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tws.moments.datasource.api.entry.CommentsBean
@@ -10,10 +9,10 @@ import com.tws.moments.datasource.usecase.MomentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.min
 
 private const val TAG = "MainViewModel##"
 private const val INITIAL_PAGE_INDEX =  1
@@ -104,16 +103,9 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val result = useCase.fetchTweets()
 
-            val tweets = if ((result?.size ?: 0) > PAGE_TWEET_COUNT) {
-                result?.subList(0, PAGE_TWEET_COUNT)
-            } else {
-                result
-            }
-
             _uiState.update { state ->
                 state.copy(
-                    allTweets = result,
-                    tweets = tweets?.filter { it.noErrorAndWithContent() },
+                    tweets = result,
                     isRefreshing = false,
                 )
             }
@@ -121,20 +113,26 @@ class MainViewModel @Inject constructor(
     }
 
     private fun fetchMoreTweets() {
-        if (reqPageIndex <= pageCount - 1) {
-            _uiState.update { it.copy(isFetchingMore = true) }
+        _uiState.update { it.copy(isFetchingMore = true) }
 
-            Log.i(TAG, "internal load more")
+        viewModelScope.launch {
+            useCase.loadMoreTweets(reqPageIndex).collectLatest { resultUC ->
+                val result = resultUC.getOrNull()
 
-            loadMoreTweets(reqPageIndex) { result ->
-                result?.filter { it.noErrorAndWithContent() }?.also { filteredResult ->
+                if (result == null) {
+                    _uiState.update { state ->
+                        state.copy(
+                            isFetchingMore = false,
+                        )
+                    }
+                } else {
                     reqPageIndex++
 
                     _uiState.update { state ->
                         state.copy(
                             tweets = arrayListOf<TweetBean>().apply {
                                 state.tweets?.let { tweets -> addAll(tweets) }
-                                addAll(filteredResult)
+                                addAll(result)
                             },
                             isFetchingMore = false,
                         )
@@ -147,31 +145,5 @@ class MainViewModel @Inject constructor(
     fun refreshTweets() {
         reqPageIndex = INITIAL_PAGE_INDEX
         loadTweets()
-    }
-
-    private val pageCount: Int
-        get() {
-            return when {
-                _uiState.value.allTweets.isNullOrEmpty() -> 0
-                _uiState.value.allTweets!!.size % PAGE_TWEET_COUNT == 0 -> _uiState.value.allTweets!!.size / PAGE_TWEET_COUNT
-                else -> _uiState.value.allTweets!!.size / PAGE_TWEET_COUNT + 1
-            }
-        }
-
-    private fun loadMoreTweets(pageIndex: Int, onLoad: (List<TweetBean>?) -> Unit) {
-        if (pageIndex < 0) {
-            throw IllegalArgumentException("page index must greater than or equal to 0.")
-        }
-
-        if (pageIndex > pageCount - 1) {
-            return
-        }
-
-        viewModelScope.launch {
-            val startIndex = PAGE_TWEET_COUNT * pageIndex
-            val endIndex = min(_uiState.value.allTweets!!.size, PAGE_TWEET_COUNT * (pageIndex + 1))
-            val result = _uiState.value.allTweets!!.subList(startIndex, endIndex)
-            onLoad(result)
-        }
     }
 }

@@ -8,5 +8,4 @@ data class MainUiState(
     val isFetchingMore: Boolean = false,
     val userBean: UserBean? = null,
     val tweets: List<TweetBean>? = null,
-    val allTweets: List<TweetBean>? = null,
 )
