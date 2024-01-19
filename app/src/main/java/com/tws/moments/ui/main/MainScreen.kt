@@ -92,7 +92,7 @@ private fun MainScreen(
         onRefresh = {
             coroutineScope.launch {
                 onEvent(
-                    MainEvent.FetchTweets
+                    MainEvent.RefreshTweets
                 )
             }
         },
@@ -100,7 +100,6 @@ private fun MainScreen(
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
         ) {
-
             itemsIndexed(
                 items = uiState.tweets.orEmpty(),
                 key = { _, tweet ->
@@ -116,8 +115,6 @@ private fun MainScreen(
 
                 // Is not loading more data and it is the last item
                 if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
-                    Log.i(TAG, "Loading more")
-
                     onEvent(
                         MainEvent.FetchMoreTweets
                     )

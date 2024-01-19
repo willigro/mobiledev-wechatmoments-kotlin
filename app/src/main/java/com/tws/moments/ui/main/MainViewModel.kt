@@ -16,7 +16,7 @@ import javax.inject.Inject
 import kotlin.math.min
 
 private const val TAG = "MainViewModel##"
-private const val PAGE_TWEET_COUNT = 5
+private const val INITIAL_PAGE_INDEX =  1
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -27,12 +27,16 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainUiState>
         get() = _uiState
 
-    private var reqPageIndex = 1
+    private var reqPageIndex = INITIAL_PAGE_INDEX
 
     fun onEvent(event: MainEvent) {
         when (event) {
             MainEvent.FetchTweets -> {
                 loadTweets()
+            }
+
+            MainEvent.RefreshTweets -> {
+                refreshTweets()
             }
 
             MainEvent.FetchUserBean -> {
@@ -93,6 +97,7 @@ class MainViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 isRefreshing = true,
+                isFetchingMore = false,
             )
         }
 
@@ -140,6 +145,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun refreshTweets() {
+        reqPageIndex = INITIAL_PAGE_INDEX
         loadTweets()
     }
 
