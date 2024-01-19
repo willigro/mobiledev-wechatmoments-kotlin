@@ -50,7 +50,7 @@ class MainViewModel @Inject constructor(
             Log.i(TAG, "internal load more")
 
             loadMoreTweets(reqPageIndex) { result ->
-                result?.filter { it.noError() }?.also {filteredResult ->
+                result?.filter { it.noErrorAndWithContent() }?.also { filteredResult ->
                     reqPageIndex++
 
                     _uiState.update { state ->
@@ -94,7 +94,7 @@ class MainViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     allTweets = result,
-                    tweets = tweets?.filter { it.noError() },
+                    tweets = tweets?.filter { it.noErrorAndWithContent() },
                     isRefreshing = false,
                 )
             }

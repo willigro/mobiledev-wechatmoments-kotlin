@@ -11,5 +11,5 @@ data class TweetBean(
     @SerializedName("unknown error")
     val unknownError: String? = null,
 ) {
-    fun noError() = error.isNullOrEmpty() && unknownError.isNullOrEmpty()
+    fun noErrorAndWithContent() = error.isNullOrEmpty() && unknownError.isNullOrEmpty() && content.isNullOrEmpty().not()
 }
