@@ -84,14 +84,14 @@ class MainViewModel @Inject constructor(
     }
 
     private fun loadTweets() {
-        _uiState.update {
-            it.copy(
-                isRefreshing = true,
-                isFetchingMore = false,
-            )
-        }
-
         viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isRefreshing = true,
+                    isFetchingMore = false,
+                )
+            }
+
             val result = useCase.fetchTweets()
 
             _uiState.update { state ->
@@ -133,7 +133,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun refreshTweets() {
+    private fun refreshTweets() {
         reqPageIndex = INITIAL_PAGE_INDEX
         loadTweets()
     }

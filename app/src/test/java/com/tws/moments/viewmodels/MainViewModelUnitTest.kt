@@ -1,103 +1,232 @@
 package com.tws.moments.viewmodels
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
-import com.tws.moments.repository.MomentRepository
-import com.tws.moments.api.entry.TweetBean
+import app.cash.turbine.test
+import com.tws.moments.datasource.test.mockTweetBean
+import com.tws.moments.datasource.usecase.MomentsUseCase
+import com.tws.moments.ui.main.MainEvent
 import com.tws.moments.ui.main.MainViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class MainDispatcherRule(
+    private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
+) : TestWatcher() {
+    override fun starting(description: Description?) {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    override fun finished(description: Description?) {
+        Dispatchers.resetMain()
+    }
+}
+
+private const val DELAY_TO_UPDATE_STATE = 100L
 
 @ExperimentalCoroutinesApi
 class MainViewModelUnitTest {
 
     @Rule
     @JvmField
-    var rule: TestRule = InstantTaskExecutorRule()
+    var rule: TestRule = MainDispatcherRule()
 
-    private val mainThreadSurrogate = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private lateinit var momentUseCase: MomentsUseCase
+    private lateinit var mainViewModel: MainViewModel
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(mainThreadSurrogate)
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-        mainThreadSurrogate.close()
+        momentUseCase = mockk<MomentsUseCase>()
+        mainViewModel = MainViewModel(momentUseCase)
     }
 
     @Test
-    fun `refresh tweets, retrieve 0 items`() {
-        val momentRepository = mockk<MomentRepository>()
+    fun `fetch tweets, retrieve null`() = runTest {
         coEvery {
-            momentRepository.fetchTweets()
-        } returns listOf()
+            momentUseCase.fetchTweets()
+        } coAnswers {
+            delay(DELAY_TO_UPDATE_STATE)
+            null
+        }
 
-        val mainViewModel = MainViewModel(momentRepository)
-        mainViewModel.refreshTweets()
+        mainViewModel.uiState.test {
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
 
-        assertEquals(0, mainViewModel.tweets.getOrAwaitValue().size)
-    }
+            mainViewModel.onEvent(
+                MainEvent.FetchTweets
+            )
 
-    @Test
-    fun `refresh tweets, retrieve 1 item`() {
-        val momentRepository = mockk<MomentRepository>()
-        coEvery {
-            momentRepository.fetchTweets()
-        } returns listOf(
-            TweetBean("")
-        )
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertTrue(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
 
-        val mainViewModel = MainViewModel(momentRepository)
-        mainViewModel.refreshTweets()
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
 
-        assertEquals(1, mainViewModel.tweets.getOrAwaitValue().size)
-    }
-}
-
-fun <T> LiveData<T>.getOrAwaitValue(
-    time: Long = 2,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
-    afterObserve: () -> Unit = {}
-): T {
-    var data: T? = null
-    val latch = CountDownLatch(1)
-    val observer = object : Observer<T> {
-        override fun onChanged(o: T?) {
-            data = o
-            latch.countDown()
-            this@getOrAwaitValue.removeObserver(this)
+            cancelAndConsumeRemainingEvents()
         }
     }
-    this.observeForever(observer)
 
-    afterObserve.invoke()
+    @Test
+    fun `fetch tweets, retrieve empty list`() = runTest {
+        coEvery {
+            momentUseCase.fetchTweets()
+        } returns listOf()
 
-    // Don't wait indefinitely if the LiveData is not set.
-    if (!latch.await(time, timeUnit)) {
-        this.removeObserver(observer)
-        throw TimeoutException("LiveData value was never set.")
+        mainViewModel.uiState.test {
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            mainViewModel.onEvent(
+                MainEvent.FetchTweets
+            )
+
+            advanceUntilIdle()
+
+            awaitItem().also { state ->
+                assertEquals(0, state.tweets!!.size)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            cancelAndConsumeRemainingEvents()
+        }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    return data as T
+    @Test
+    fun `fetch tweet, delayed, retrieve populated list`() = runTest {
+        val contentTest = "Content 1"
+
+        coEvery {
+            momentUseCase.fetchTweets()
+        } coAnswers {
+            delay(DELAY_TO_UPDATE_STATE)
+            listOf(
+                mockTweetBean(contentTest)
+            )
+        }
+
+        mainViewModel.uiState.test {
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            mainViewModel.onEvent(
+                MainEvent.FetchTweets
+            )
+
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertTrue(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            awaitItem().also { state ->
+                assertEquals(1, state.tweets!!.size)
+                assertEquals(contentTest, state.tweets!!.first().content)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `refresh tweets, retrieve null`() = runTest {
+        coEvery {
+            momentUseCase.fetchTweets()
+        } coAnswers {
+            delay(DELAY_TO_UPDATE_STATE)
+            null
+        }
+
+        mainViewModel.uiState.test {
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            mainViewModel.onEvent(
+                MainEvent.RefreshTweets
+            )
+
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertTrue(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `refresh tweets, retrieve empty list`() = runTest {
+        coEvery {
+            momentUseCase.fetchTweets()
+        } returns listOf()
+
+        mainViewModel.uiState.test {
+            awaitItem().also { state ->
+                assertNull(state.tweets)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            mainViewModel.onEvent(
+                MainEvent.RefreshTweets
+            )
+
+            advanceUntilIdle()
+
+            awaitItem().also { state ->
+                assertEquals(0, state.tweets!!.size)
+                assertFalse(state.isRefreshing)
+                assertFalse(state.isFetchingMore)
+            }
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

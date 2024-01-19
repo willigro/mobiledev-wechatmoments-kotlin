@@ -65,23 +65,15 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
-    androidTestImplementation(libs.bundles.compose.android.test)
     debugImplementation(libs.bundles.compose.debug)
     implementation(libs.androidx.navigation)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.bundles.android.test)
+    testImplementation(libs.bundles.test)
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.gson)
-    testImplementation(libs.robolectric)
-
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
-
-    androidTestImplementation(libs.mockito.mockito.core)
-    androidTestImplementation(libs.mockito.android)
-    androidTestImplementation(libs.kotlin.mockito.kotlin)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
