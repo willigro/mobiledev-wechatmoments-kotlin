@@ -87,26 +87,28 @@ class MomentsUseCaseImpl @Inject constructor(
         tweetBean: TweetBean,
         commentBean: CommentsBean,
     ): Flow<ResultUC<List<TweetBean>?>> = flow {
-        tweets?.toMutableList()?.apply {
-            val index = indexOfFirst { it.id == tweetBean.id }
+        withContext(Dispatchers.Default) {
+            tweets?.toMutableList()?.apply {
+                val index = indexOfFirst { it.id == tweetBean.id }
 
-            if (index > -1) {
-                if (tweetBean.comments == null) {
-                    this[index] = this[index].copy(
-                        comments = arrayListOf(commentBean)
-                    )
-                } else {
-                    this[index] = this[index].copy(
-                        comments = arrayListOf<CommentsBean>().apply {
-                            if (tweetBean.comments.isEmpty().not()) {
-                                addAll(tweetBean.comments)
+                if (index > -1) {
+                    if (tweetBean.comments == null) {
+                        this[index] = this[index].copy(
+                            comments = arrayListOf(commentBean)
+                        )
+                    } else {
+                        this[index] = this[index].copy(
+                            comments = arrayListOf<CommentsBean>().apply {
+                                if (tweetBean.comments.isEmpty().not()) {
+                                    addAll(tweetBean.comments)
+                                }
+                                add(commentBean)
                             }
-                            add(commentBean)
-                        }
-                    )
-                }
+                        )
+                    }
 
-                emit(ResultUC.success(this))
+                    emit(ResultUC.success(this))
+                }
             }
         }
     }
