@@ -1,4 +1,4 @@
-package com.tws.moments.api.utils
+package com.tws.moments.datasource.api.utils
 
 import android.content.Context
 import android.net.ConnectivityManager

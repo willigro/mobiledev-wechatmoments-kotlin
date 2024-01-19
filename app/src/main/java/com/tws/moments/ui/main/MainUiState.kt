@@ -1,7 +1,7 @@
 package com.tws.moments.ui.main
 
-import com.tws.moments.api.entry.TweetBean
-import com.tws.moments.api.entry.UserBean
+import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.api.entry.UserBean
 
 data class MainUiState(
     val isRefreshing: Boolean = false,

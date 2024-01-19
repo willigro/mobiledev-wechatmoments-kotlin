@@ -1,9 +1,9 @@
-package com.tws.moments.api.di
+package com.tws.moments.datasource.api.di
 
 import android.content.Context
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import com.tws.moments.api.MomentService
-import com.tws.moments.api.utils.hasNetwork
+import com.tws.moments.datasource.api.MomentService
+import com.tws.moments.datasource.api.utils.hasNetwork
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

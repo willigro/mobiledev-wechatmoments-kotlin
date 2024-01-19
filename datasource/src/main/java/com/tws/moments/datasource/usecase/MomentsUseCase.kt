@@ -1,8 +1,8 @@
-package com.tws.moments.usecase
+package com.tws.moments.datasource.usecase
 
-import com.tws.moments.api.entry.TweetBean
-import com.tws.moments.api.entry.UserBean
-import com.tws.moments.repository.MomentRepository
+import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.api.entry.UserBean
+import com.tws.moments.datasource.repository.MomentRepository
 import javax.inject.Inject
 
 

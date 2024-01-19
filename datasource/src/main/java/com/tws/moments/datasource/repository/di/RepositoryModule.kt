@@ -1,8 +1,8 @@
-package com.tws.moments.repository.di
+package com.tws.moments.datasource.repository.di
 
-import com.tws.moments.api.MomentService
-import com.tws.moments.repository.MomentRepository
-import com.tws.moments.repository.MomentRepositoryImpl
+import com.tws.moments.datasource.api.MomentService
+import com.tws.moments.datasource.repository.MomentRepository
+import com.tws.moments.datasource.repository.MomentRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

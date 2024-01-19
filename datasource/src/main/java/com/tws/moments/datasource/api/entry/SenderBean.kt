@@ -1,4 +1,4 @@
-package com.tws.moments.api.entry
+package com.tws.moments.datasource.api.entry
 
 data class SenderBean(
     val nick: String? = null,

@@ -1,8 +1,8 @@
-package com.tws.moments.repository
+package com.tws.moments.datasource.repository
 
-import com.tws.moments.api.MomentService
-import com.tws.moments.api.entry.TweetBean
-import com.tws.moments.api.entry.UserBean
+import com.tws.moments.datasource.api.MomentService
+import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.api.entry.UserBean
 import javax.inject.Inject
 
 interface MomentRepository {

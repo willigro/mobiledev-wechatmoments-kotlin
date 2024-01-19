@@ -37,10 +37,10 @@ import coil.compose.SubcomposeAsyncImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
-import com.tws.moments.api.entry.CommentsBean
-import com.tws.moments.api.entry.ImagesBean
-import com.tws.moments.api.entry.TweetBean
-import com.tws.moments.api.entry.UserBean
+import com.tws.moments.datasource.api.entry.CommentsBean
+import com.tws.moments.datasource.api.entry.ImagesBean
+import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall

@@ -3,10 +3,10 @@ package com.tws.moments.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tws.moments.api.entry.CommentsBean
-import com.tws.moments.api.entry.SenderBean
-import com.tws.moments.api.entry.TweetBean
-import com.tws.moments.usecase.MomentsUseCase
+import com.tws.moments.datasource.api.entry.CommentsBean
+import com.tws.moments.datasource.api.entry.SenderBean
+import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.usecase.MomentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,7 +68,9 @@ class MainViewModel @Inject constructor(
                         } else {
                             this[index] = this[index].copy(
                                 comments = arrayListOf<CommentsBean>().apply {
-                                    addAll(tweetBean.comments)
+                                    if (tweetBean.comments.isNullOrEmpty().not()) {
+                                        addAll(tweetBean.comments!!)
+                                    }
                                     add(comment)
                                 }
                             )
