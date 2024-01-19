@@ -93,14 +93,19 @@ private fun MainScreen(
         },
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            itemsIndexed(uiState.tweets.orEmpty()) { index, tweet ->
+
+            itemsIndexed(
+                items = uiState.tweets.orEmpty(),
+                key = { _, tweet ->
+                    tweet.id.toString()
+                }
+            ) { index, tweet ->
                 BaseTweetComponent(
                     tweetBean = tweet,
                     isHead = index == 0,
                     userBean = uiState.userBean,
-                    index = index,
                     onEvent = onEvent,
                 )
 
@@ -122,16 +127,15 @@ private fun BaseTweetComponent(
     userBean: UserBean?,
     tweetBean: TweetBean,
     isHead: Boolean,
-    index: Int,
     onEvent: (MainEvent) -> Unit,
 ) {
     if (isHead) {
         Column(modifier = Modifier.fillMaxWidth()) {
             MomentHeaderComponent(userBean = userBean)
-            MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent, index = index)
+            MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent)
         }
     } else {
-        MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent, index = index)
+        MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent)
     }
 
 }
@@ -139,7 +143,6 @@ private fun BaseTweetComponent(
 @Composable
 private fun MomentItemComponent(
     tweetBean: TweetBean,
-    index: Int,
     onEvent: (MainEvent) -> Unit,
 ) {
     Column(
@@ -236,7 +239,7 @@ private fun MomentItemComponent(
                 Button(
                     onClick = {
                         onEvent(
-                            MainEvent.ShareNewComment(tweetBean, index)
+                            MainEvent.ShareNewComment(tweetBean)
                         )
                     }
                 ) {

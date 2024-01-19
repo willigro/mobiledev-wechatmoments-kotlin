@@ -8,6 +8,5 @@ sealed interface MainEvent {
     data object FetchMoreTweets : MainEvent
     data class ShareNewComment(
         val tweetBean: TweetBean,
-        val index: Int,
     ) : MainEvent
 }

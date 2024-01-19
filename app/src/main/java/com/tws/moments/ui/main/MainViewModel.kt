@@ -44,12 +44,12 @@ class MainViewModel @Inject constructor(
             }
 
             is MainEvent.ShareNewComment -> {
-                shareNewComment(event.tweetBean, event.index)
+                shareNewComment(event.tweetBean)
             }
         }
     }
 
-    private fun shareNewComment(tweetBean: TweetBean, index: Int) {
+    private fun shareNewComment(tweetBean: TweetBean) {
         val comment = CommentsBean(
             content = "Testing",
             sender = SenderBean("nick", null, null),
@@ -58,17 +58,21 @@ class MainViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 tweets = state.tweets?.toMutableList()?.apply {
-                    if (tweetBean.comments == null) {
-                        this[index] = this[index].copy(
-                            comments = arrayListOf(comment)
-                        )
-                    } else {
-                        this[index] = this[index].copy(
-                            comments = arrayListOf<CommentsBean>().apply {
-                                addAll(tweetBean.comments)
-                                add(comment)
-                            }
-                        )
+                    val index = indexOfFirst { it.id == tweetBean.id }
+
+                    if (index > -1) {
+                        if (tweetBean.comments == null) {
+                            this[index] = this[index].copy(
+                                comments = arrayListOf(comment)
+                            )
+                        } else {
+                            this[index] = this[index].copy(
+                                comments = arrayListOf<CommentsBean>().apply {
+                                    addAll(tweetBean.comments)
+                                    add(comment)
+                                }
+                            )
+                        }
                     }
                 }
             )
