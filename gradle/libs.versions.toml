@@ -62,6 +62,7 @@ androidx-arch-core = { module = "androidx.arch.core:core-testing", version = "2.
 org-jetbrains-kotlinx-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.6.0" }
 org-jetbrains-kotlinx-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.5.1" }
 junit = { module = "junit:junit", version.ref = "junit" }
+app-cash-turbine = { module = "app.cash.turbine:turbine", version = "1.0.0" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -114,6 +115,7 @@ test = [
     "org-jetbrains-kotlinx-core",
     "org-jetbrains-kotlinx-test",
     "io-mockk",
+    "app-cash-turbine",
 ]
 android-test = [
     "androidx-test",

@@ -22,4 +22,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.jakewharton)
+
+    androidTestImplementation(libs.bundles.android.test)
+    testImplementation(libs.bundles.test)
 }

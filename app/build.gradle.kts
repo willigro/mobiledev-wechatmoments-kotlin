@@ -70,7 +70,6 @@ dependencies {
 
     androidTestImplementation(libs.bundles.android.test)
     testImplementation(libs.bundles.test)
-    testImplementation("app.cash.turbine:turbine:1.0.0")
 
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.gson)

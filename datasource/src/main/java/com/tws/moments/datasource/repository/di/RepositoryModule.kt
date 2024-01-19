@@ -3,6 +3,7 @@ package com.tws.moments.datasource.repository.di
 import com.tws.moments.datasource.api.MomentService
 import com.tws.moments.datasource.repository.MomentRepository
 import com.tws.moments.datasource.repository.MomentRepositoryImpl
+import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,6 +17,7 @@ class RepositoryModule {
     @Singleton
     @Provides
     fun providesMomentRepository(
-        momentService: MomentService
-    ): MomentRepository = MomentRepositoryImpl(momentService)
+        iDispatcher: IDispatcher,
+        momentService: MomentService,
+    ): MomentRepository = MomentRepositoryImpl(iDispatcher, momentService)
 }

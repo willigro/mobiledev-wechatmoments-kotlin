@@ -4,9 +4,9 @@ import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.TweetBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.repository.MomentRepository
+import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -28,6 +28,7 @@ interface MomentsUseCase {
 private const val PAGE_TWEET_COUNT = 5
 
 class MomentsUseCaseImpl @Inject constructor(
+    private val iDispatcher: IDispatcher,
     private val repository: MomentRepository,
 ) : MomentsUseCase {
 
@@ -52,7 +53,7 @@ class MomentsUseCaseImpl @Inject constructor(
             null
         }
 
-        return withContext(Dispatchers.Default) {
+        return withContext(iDispatcher.dispatcherDefault()) {
             val tweets = if ((allTweets?.size ?: 0) > PAGE_TWEET_COUNT) {
                 allTweets?.subList(0, PAGE_TWEET_COUNT)
             } else {
@@ -87,7 +88,7 @@ class MomentsUseCaseImpl @Inject constructor(
         tweetBean: TweetBean,
         commentBean: CommentsBean,
     ): Flow<ResultUC<List<TweetBean>?>> = flow {
-        withContext(Dispatchers.Default) {
+        withContext(iDispatcher.dispatcherDefault()) {
             tweets?.toMutableList()?.apply {
                 val index = indexOfFirst { it.id == tweetBean.id }
 
