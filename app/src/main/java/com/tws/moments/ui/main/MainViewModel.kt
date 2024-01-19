@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "MainViewModel##"
-private const val INITIAL_PAGE_INDEX =  1
+private const val INITIAL_PAGE_INDEX = 1
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -58,29 +58,20 @@ class MainViewModel @Inject constructor(
             sender = SenderBean("nick", null, null),
         )
 
-        _uiState.update { state ->
-            state.copy(
-                tweets = state.tweets?.toMutableList()?.apply {
-                    val index = indexOfFirst { it.id == tweetBean.id }
-
-                    if (index > -1) {
-                        if (tweetBean.comments == null) {
-                            this[index] = this[index].copy(
-                                comments = arrayListOf(commentBean)
-                            )
-                        } else {
-                            this[index] = this[index].copy(
-                                comments = arrayListOf<CommentsBean>().apply {
-                                    if (tweetBean.comments.isNullOrEmpty().not()) {
-                                        addAll(tweetBean.comments!!)
-                                    }
-                                    add(commentBean)
-                                }
-                            )
-                        }
+        viewModelScope.launch {
+            useCase.shareComment(
+                tweets = _uiState.value.tweets,
+                tweetBean = tweetBean,
+                commentBean = commentBean,
+            ).collectLatest {
+                it.getOrNull()?.also { result ->
+                    _uiState.update { state ->
+                        state.copy(
+                            tweets = result
+                        )
                     }
                 }
-            )
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.tws.moments.datasource.usecase
 
+import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.TweetBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.repository.MomentRepository
@@ -17,6 +18,11 @@ interface MomentsUseCase {
     suspend fun fetchUser(): UserBean?
     suspend fun fetchTweets(): List<TweetBean>?
     suspend fun loadMoreTweets(pageIndex: Int): Flow<ResultUC<List<TweetBean>?>>
+    suspend fun shareComment(
+        tweets: List<TweetBean>?,
+        tweetBean: TweetBean,
+        commentBean: CommentsBean
+    ): Flow<ResultUC<List<TweetBean>?>>
 }
 
 private const val PAGE_TWEET_COUNT = 5
@@ -74,6 +80,35 @@ class MomentsUseCaseImpl @Inject constructor(
         val result = allTweets!!.subList(startIndex, endIndex).filter { it.noErrorAndWithContent() }
 
         emit(ResultUC.success(result))
+    }
+
+    override suspend fun shareComment(
+        tweets: List<TweetBean>?,
+        tweetBean: TweetBean,
+        commentBean: CommentsBean,
+    ): Flow<ResultUC<List<TweetBean>?>> = flow {
+        tweets?.toMutableList()?.apply {
+            val index = indexOfFirst { it.id == tweetBean.id }
+
+            if (index > -1) {
+                if (tweetBean.comments == null) {
+                    this[index] = this[index].copy(
+                        comments = arrayListOf(commentBean)
+                    )
+                } else {
+                    this[index] = this[index].copy(
+                        comments = arrayListOf<CommentsBean>().apply {
+                            if (tweetBean.comments.isEmpty().not()) {
+                                addAll(tweetBean.comments)
+                            }
+                            add(commentBean)
+                        }
+                    )
+                }
+
+                emit(ResultUC.success(this))
+            }
+        }
     }
 
     private val pageCount: Int
