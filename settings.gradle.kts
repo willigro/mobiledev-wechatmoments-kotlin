@@ -23,3 +23,4 @@ buildCache {
 rootProject.name = "TheWeChatMoments"
 include(":app")
 include(":designsystem")
+include(":datasource")
