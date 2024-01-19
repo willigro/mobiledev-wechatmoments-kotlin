@@ -81,30 +81,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun fetchMoreTweets() {
-        if (reqPageIndex <= pageCount - 1) {
-            _uiState.update { it.copy(isFetchingMore = true) }
-
-            Log.i(TAG, "internal load more")
-
-            loadMoreTweets(reqPageIndex) { result ->
-                result?.filter { it.noErrorAndWithContent() }?.also { filteredResult ->
-                    reqPageIndex++
-
-                    _uiState.update { state ->
-                        state.copy(
-                            tweets = arrayListOf<TweetBean>().apply {
-                                state.tweets?.let { tweets -> addAll(tweets) }
-                                addAll(filteredResult)
-                            },
-                            isFetchingMore = false,
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     private fun loadUserInfo() {
         viewModelScope.launch {
             _uiState.update {
@@ -135,6 +111,30 @@ class MainViewModel @Inject constructor(
                     tweets = tweets?.filter { it.noErrorAndWithContent() },
                     isRefreshing = false,
                 )
+            }
+        }
+    }
+
+    private fun fetchMoreTweets() {
+        if (reqPageIndex <= pageCount - 1) {
+            _uiState.update { it.copy(isFetchingMore = true) }
+
+            Log.i(TAG, "internal load more")
+
+            loadMoreTweets(reqPageIndex) { result ->
+                result?.filter { it.noErrorAndWithContent() }?.also { filteredResult ->
+                    reqPageIndex++
+
+                    _uiState.update { state ->
+                        state.copy(
+                            tweets = arrayListOf<TweetBean>().apply {
+                                state.tweets?.let { tweets -> addAll(tweets) }
+                                addAll(filteredResult)
+                            },
+                            isFetchingMore = false,
+                        )
+                    }
+                }
             }
         }
     }
