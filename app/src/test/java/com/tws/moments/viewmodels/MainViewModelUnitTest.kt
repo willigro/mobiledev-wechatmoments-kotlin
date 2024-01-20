@@ -1,21 +1,18 @@
 package com.tws.moments.viewmodels
 
 import app.cash.turbine.test
-import com.tws.moments.datasource.test.mockTweetBean
+import com.tws.moments.utils.mockTweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.ui.main.MainEvent
+import com.tws.moments.ui.main.MainUiState
 import com.tws.moments.ui.main.MainViewModel
+import com.tws.moments.utils.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -24,23 +21,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
 
-
-@OptIn(ExperimentalCoroutinesApi::class)
-class MainDispatcherRule(
-    private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
-) : TestWatcher() {
-    override fun starting(description: Description?) {
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    override fun finished(description: Description?) {
-        Dispatchers.resetMain()
-    }
-}
-
+// TODO (rittmann) I don't like using delay on tests, see a better way to await the State the change
+//  it is need to prevent that the initial state is not notified since the next one is updated too fast
 private const val DELAY_TO_UPDATE_STATE = 100L
 
 @ExperimentalCoroutinesApi
@@ -69,27 +52,15 @@ class MainViewModelUnitTest {
         }
 
         mainViewModel.uiState.test {
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertIdleState()
 
             mainViewModel.onEvent(
                 MainEvent.FetchTweets
             )
 
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertTrue(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchingTweets()
 
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchTweetsResultNull()
 
             cancelAndConsumeRemainingEvents()
         }
@@ -102,11 +73,7 @@ class MainViewModelUnitTest {
         } returns listOf()
 
         mainViewModel.uiState.test {
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertIdleState()
 
             mainViewModel.onEvent(
                 MainEvent.FetchTweets
@@ -114,11 +81,7 @@ class MainViewModelUnitTest {
 
             advanceUntilIdle()
 
-            awaitItem().also { state ->
-                assertEquals(0, state.tweets!!.size)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchTweetsResult(0)
 
             cancelAndConsumeRemainingEvents()
         }
@@ -138,28 +101,15 @@ class MainViewModelUnitTest {
         }
 
         mainViewModel.uiState.test {
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertIdleState()
 
             mainViewModel.onEvent(
                 MainEvent.FetchTweets
             )
 
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertTrue(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchingTweets()
 
-            awaitItem().also { state ->
-                assertEquals(1, state.tweets!!.size)
-                assertEquals(contentTest, state.tweets!!.first().content)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchTweetsResultContent(1, contentTest, 0)
 
             cancelAndConsumeRemainingEvents()
         }
@@ -175,27 +125,15 @@ class MainViewModelUnitTest {
         }
 
         mainViewModel.uiState.test {
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertIdleState()
 
             mainViewModel.onEvent(
                 MainEvent.RefreshTweets
             )
 
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertTrue(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchingTweets()
 
-            awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchTweetsResultNull()
 
             cancelAndConsumeRemainingEvents()
         }
@@ -209,9 +147,7 @@ class MainViewModelUnitTest {
 
         mainViewModel.uiState.test {
             awaitItem().also { state ->
-                assertNull(state.tweets)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
+                state.assertIdleState()
             }
 
             mainViewModel.onEvent(
@@ -220,13 +156,40 @@ class MainViewModelUnitTest {
 
             advanceUntilIdle()
 
-            awaitItem().also { state ->
-                assertEquals(0, state.tweets!!.size)
-                assertFalse(state.isRefreshing)
-                assertFalse(state.isFetchingMore)
-            }
+            awaitItem().assertFetchTweetsResult(0)
 
             cancelAndConsumeRemainingEvents()
         }
+    }
+
+    private fun MainUiState.assertIdleState() {
+        assertNull(tweets)
+        assertFalse(isRefreshing)
+        assertFalse(isFetchingMore)
+    }
+
+    private fun MainUiState.assertFetchingTweets() {
+        assertNull(tweets)
+        assertTrue(isRefreshing)
+        assertFalse(isFetchingMore)
+    }
+
+    private fun MainUiState.assertFetchTweetsResultNull() {
+        assertNull(tweets)
+        assertFalse(isRefreshing)
+        assertFalse(isFetchingMore)
+    }
+
+    private fun MainUiState.assertFetchTweetsResult(size: Int) {
+        assertEquals(size, tweets!!.size)
+        assertFalse(isRefreshing)
+        assertFalse(isFetchingMore)
+    }
+
+    private fun MainUiState.assertFetchTweetsResultContent(size: Int, content: String, index: Int) {
+        assertEquals(size, tweets!!.size)
+        assertEquals(content, tweets!![index].content)
+        assertFalse(isRefreshing)
+        assertFalse(isFetchingMore)
     }
 }

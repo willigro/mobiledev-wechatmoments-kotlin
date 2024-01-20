@@ -1,8 +1,7 @@
-package com.tws.moments.datasource.test
+package com.tws.moments.utils
 
 import com.tws.moments.datasource.api.entry.TweetBean
 
-// TODO (rittmann) better handle it to do not compile it when its not testing
 fun mockTweetBean(
     content: String,
 ) = TweetBean(
