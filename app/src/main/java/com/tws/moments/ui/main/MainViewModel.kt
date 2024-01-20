@@ -77,8 +77,10 @@ class MainViewModel @Inject constructor(
 
     private fun loadUserInfo() {
         viewModelScope.launch {
+            val userBean = useCase.fetchUser()
+
             _uiState.update {
-                it.copy(userBean = useCase.fetchUser())
+                it.copy(userBean = userBean)
             }
         }
     }
@@ -104,9 +106,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun fetchMoreTweets() {
-        _uiState.update { it.copy(isFetchingMore = true) }
-
         viewModelScope.launch {
+            _uiState.update { it.copy(isFetchingMore = true) }
+
             useCase.loadMoreTweets(reqPageIndex).collectLatest { resultUC ->
                 val result = resultUC.getOrNull()
 
