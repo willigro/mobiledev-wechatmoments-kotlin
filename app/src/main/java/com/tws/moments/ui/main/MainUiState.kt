@@ -7,6 +7,7 @@ import com.tws.moments.datasource.api.entry.UserBean
 data class MainUiState(
     val isRefreshing: Boolean = false,
     val isFetchingMore: Boolean = false,
+    val isSendingComment: Boolean = false,
     val userBean: UserBean? = null,
     val tweets: SnapshotStateList<TweetBean>? = null,
 )

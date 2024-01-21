@@ -55,10 +55,14 @@ class MainViewModel @Inject constructor(
 
     private fun shareNewComment(tweetBean: TweetBean, comment: String) {
         viewModelScope.launch {
+            _uiState.update { it.copy(isSendingComment = true) }
+
             useCase.shareComment(
                 tweetBean = tweetBean,
                 comment = comment,
-            ).collect()
+            ).collect {
+                _uiState.update { it.copy(isSendingComment = false) }
+            }
         }
     }
 

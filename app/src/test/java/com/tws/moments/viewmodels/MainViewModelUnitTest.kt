@@ -327,25 +327,34 @@ class MainViewModelUnitTest {
             }
         }
 
-//    @Test
-//    fun `share comment, create valid comment to a tweet without comments`() = runTest {
-//        loadInitialTweetAndAdvance(
-//            mainViewModel = mainViewModel,
-//            momentUseCase = momentUseCase,
-//        ) {
-//            coEvery {
-//                momentUseCase.shareComment()
-//            }
-//
-//            mainViewModel.onEvent(
-//                MainEvent.FetchMoreTweets
-//            )
-//
-//            awaitItem().assertFetchingMoreTweets()
-//
-//            awaitItem().assertFetchingMoreTweetsConcluded(1)
-//
-//            cancelAndConsumeRemainingEvents()
-//        }
-//    }
+    @Test
+    fun `share comment, create valid comment to a tweet without comments`() = runTest {
+        loadInitialTweetAndAdvance(
+            mainViewModel = mainViewModel,
+            momentUseCase = momentUseCase,
+        ) {
+            val firstTweet = mainViewModel.uiState.value.tweets!!.first()
+            val newComment = "New comment"
+
+            coEvery {
+                momentUseCase.shareComment(
+                    firstTweet,
+                    newComment
+                )
+            } returns flow {
+                delay(DELAY_TO_UPDATE_STATE)
+                emit(ResultUC.success())
+            }
+
+            mainViewModel.onEvent(
+                MainEvent.ShareNewComment(firstTweet, newComment)
+            )
+
+            awaitItem().assertSendingComment(firstTweet, null)
+
+            awaitItem().assertNewCommentDone()
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

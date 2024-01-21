@@ -2,6 +2,7 @@ package com.tws.moments.viewmodels
 
 import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.ui.main.MainEvent
 import com.tws.moments.ui.main.MainUiState
@@ -9,7 +10,6 @@ import com.tws.moments.ui.main.MainViewModel
 import com.tws.moments.utils.mockTweetBean
 import io.mockk.coEvery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import org.junit.Assert.assertEquals
@@ -66,6 +66,19 @@ internal fun MainUiState.assertUserInfoNull() {
 internal fun MainUiState.assertUserBean(username: String) {
     println("assertUserBean=${userBean}")
     assertEquals(username, userBean!!.username)
+}
+
+internal fun MainUiState.assertSendingComment(tweetBean: TweetBean, size: Int?) {
+    if (size == null) {
+        assertNull(tweetBean.comments)
+    } else {
+        assertEquals(size, tweetBean.comments!!.size)
+    }
+    assertTrue(isSendingComment)
+}
+
+internal fun MainUiState.assertNewCommentDone() {
+    assertFalse(isSendingComment)
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
