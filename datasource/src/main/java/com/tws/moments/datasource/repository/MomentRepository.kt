@@ -1,7 +1,7 @@
 package com.tws.moments.datasource.repository
 
 import com.tws.moments.datasource.api.MomentService
-import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.api.entry.TweetBeanServer
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import kotlinx.coroutines.withContext
@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 interface MomentRepository {
     suspend fun fetchUser(): UserBean
-    suspend fun fetchTweets(): List<TweetBean>
+    suspend fun fetchTweets(): List<TweetBeanServer>
 }
 
 class MomentRepositoryImpl @Inject constructor(
@@ -21,7 +21,7 @@ class MomentRepositoryImpl @Inject constructor(
         momentService.user("jsmith")
     }
 
-    override suspend fun fetchTweets(): List<TweetBean> = withContext(iDispatcher.dispatcherIO()) {
+    override suspend fun fetchTweets(): List<TweetBeanServer> = withContext(iDispatcher.dispatcherIO()) {
         momentService.tweets("jsmith")
     }
 }

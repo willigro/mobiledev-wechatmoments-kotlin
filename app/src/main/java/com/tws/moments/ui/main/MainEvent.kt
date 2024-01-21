@@ -1,6 +1,6 @@
 package com.tws.moments.ui.main
 
-import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.shared.data.TweetBean
 
 sealed interface MainEvent {
     data object FetchUserBean : MainEvent

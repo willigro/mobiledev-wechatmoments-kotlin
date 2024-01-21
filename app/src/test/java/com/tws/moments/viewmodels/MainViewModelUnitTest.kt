@@ -327,8 +327,25 @@ class MainViewModelUnitTest {
             }
         }
 
-    @Test
-    fun `share comment`() {
-
-    }
+//    @Test
+//    fun `share comment, create valid comment to a tweet without comments`() = runTest {
+//        loadInitialTweetAndAdvance(
+//            mainViewModel = mainViewModel,
+//            momentUseCase = momentUseCase,
+//        ) {
+//            coEvery {
+//                momentUseCase.shareComment()
+//            }
+//
+//            mainViewModel.onEvent(
+//                MainEvent.FetchMoreTweets
+//            )
+//
+//            awaitItem().assertFetchingMoreTweets()
+//
+//            awaitItem().assertFetchingMoreTweetsConcluded(1)
+//
+//            cancelAndConsumeRemainingEvents()
+//        }
+//    }
 }

@@ -1,14 +1,15 @@
 package com.tws.moments.ui.main
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tws.moments.datasource.api.entry.CommentsBean
-import com.tws.moments.datasource.api.entry.SenderBean
-import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -53,25 +54,11 @@ class MainViewModel @Inject constructor(
     }
 
     private fun shareNewComment(tweetBean: TweetBean, comment: String) {
-        val commentBean = CommentsBean(
-            content = comment,
-            sender = SenderBean("nick", null, null),
-        )
-
         viewModelScope.launch {
             useCase.shareComment(
-                tweets = _uiState.value.tweets,
                 tweetBean = tweetBean,
-                commentBean = commentBean,
-            ).collectLatest {
-                it.getOrNull()?.also { result ->
-                    _uiState.update { state ->
-                        state.copy(
-                            tweets = result
-                        )
-                    }
-                }
-            }
+                comment = comment,
+            ).collect()
         }
     }
 
@@ -98,7 +85,7 @@ class MainViewModel @Inject constructor(
 
             _uiState.update { state ->
                 state.copy(
-                    tweets = result,
+                    tweets = result?.toMutableStateList(),
                     isRefreshing = false,
                 )
             }
@@ -123,7 +110,7 @@ class MainViewModel @Inject constructor(
 
                     _uiState.update { state ->
                         state.copy(
-                            tweets = arrayListOf<TweetBean>().apply {
+                            tweets = mutableStateListOf<TweetBean>().apply {
                                 state.tweets?.let { tweets -> addAll(tweets) }
                                 addAll(result)
                             },

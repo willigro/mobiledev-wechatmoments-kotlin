@@ -1,14 +1,17 @@
 package com.tws.moments.datasource.usecase
 
 import com.tws.moments.datasource.api.entry.CommentsBean
-import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.api.entry.SenderBean
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.api.entry.UserBean
+import com.tws.moments.datasource.mappers.mapToTweetBean
 import com.tws.moments.datasource.repository.MomentRepository
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.min
@@ -19,10 +22,9 @@ interface MomentsUseCase {
     suspend fun fetchTweets(): List<TweetBean>?
     suspend fun loadMoreTweets(pageIndex: Int): Flow<ResultUC<List<TweetBean>?>>
     suspend fun shareComment(
-        tweets: List<TweetBean>?,
         tweetBean: TweetBean,
-        commentBean: CommentsBean
-    ): Flow<ResultUC<List<TweetBean>?>>
+        comment: String,
+    ): Flow<ResultUC<List<CommentsBean>?>>
 }
 
 private const val PAGE_TWEET_COUNT = 5
@@ -47,7 +49,7 @@ class MomentsUseCaseImpl @Inject constructor(
 
     override suspend fun fetchTweets(): List<TweetBean>? {
         allTweets = try {
-            repository.fetchTweets()
+            repository.fetchTweets().mapToTweetBean()
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -84,35 +86,27 @@ class MomentsUseCaseImpl @Inject constructor(
     }
 
     override suspend fun shareComment(
-        tweets: List<TweetBean>?,
         tweetBean: TweetBean,
-        commentBean: CommentsBean,
-    ): Flow<ResultUC<List<TweetBean>?>> = flow {
-        withContext(iDispatcher.dispatcherDefault()) {
-            tweets?.toMutableList()?.apply {
-                val index = indexOfFirst { it.id == tweetBean.id }
-
-                if (index > -1) {
-                    if (tweetBean.comments == null) {
-                        this[index] = this[index].copy(
-                            comments = arrayListOf(commentBean)
-                        )
-                    } else {
-                        this[index] = this[index].copy(
-                            comments = arrayListOf<CommentsBean>().apply {
-                                if (tweetBean.comments.isEmpty().not()) {
-                                    addAll(tweetBean.comments)
-                                }
-                                add(commentBean)
-                            }
-                        )
-                    }
-
-                    emit(ResultUC.success(this))
-                }
-            }
+        comment: String,
+    ): Flow<ResultUC<List<CommentsBean>?>> = flow {
+        if (comment.isEmpty()) {
+            fails()
+            return@flow
         }
-    }
+
+        val commentBean = CommentsBean(
+            content = comment,
+            sender = SenderBean("nick", null, null),
+        )
+
+        if (tweetBean.comments == null) {
+            emit(ResultUC.success(arrayListOf(commentBean)))
+        } else {
+            tweetBean.comments.add(commentBean)
+
+            emit(ResultUC.success())
+        }
+    }.flowOn(iDispatcher.dispatcherDefault())
 
     private val pageCount: Int
         get() {

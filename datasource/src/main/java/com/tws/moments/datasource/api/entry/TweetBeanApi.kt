@@ -1,11 +1,8 @@
 package com.tws.moments.datasource.api.entry
 
 import com.google.gson.annotations.SerializedName
-import java.util.UUID
 
-data class TweetBean(
-    @Transient
-    val id: UUID = UUID.randomUUID(),
+data class TweetBeanServer(
     val content: String? = null,
     val sender: SenderBean? = null,
     val images: List<ImagesBean>? = null,
@@ -13,6 +10,5 @@ data class TweetBean(
     val error: String? = null,
     @SerializedName("unknown error")
     val unknownError: String? = null,
-) {
-    fun noErrorAndWithContent() = error.isNullOrEmpty() && unknownError.isNullOrEmpty() && content.isNullOrEmpty().not()
-}
+)
+

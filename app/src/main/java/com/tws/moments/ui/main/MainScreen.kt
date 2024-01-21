@@ -44,7 +44,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.ImagesBean
-import com.tws.moments.datasource.api.entry.TweetBean
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.theme.AppTheme
@@ -131,15 +131,16 @@ private fun BaseTweetComponent(
     isHead: Boolean,
     onEvent: (MainEvent) -> Unit,
 ) {
-    if (isHead) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (isHead) {
             MomentHeaderComponent(userBean = userBean)
-            MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent)
         }
-    } else {
-        MomentItemComponent(tweetBean = tweetBean, onEvent = onEvent)
-    }
 
+        MomentItemComponent(
+            tweetBean = tweetBean,
+            onEvent = onEvent,
+        )
+    }
 }
 
 @Composable
@@ -233,9 +234,7 @@ private fun MomentItemComponent(
                         shape = RoundedCornerShapeSmall,
                     ),
             ) {
-                tweetBean.comments?.forEach { comments ->
-                    CommentComponent(commentsBean = comments)
-                }
+                CommentListArea(tweetBean.comments)
 
                 val showCommentArea = remember {
                     mutableStateOf(false)
@@ -312,6 +311,13 @@ private fun MomentItemComponent(
                 top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
             )
         )
+    }
+}
+
+@Composable
+fun CommentListArea(comments: List<CommentsBean>?) {
+    comments?.forEach { comment ->
+        CommentComponent(commentsBean = comment)
     }
 }
 
