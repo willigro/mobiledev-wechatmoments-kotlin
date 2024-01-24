@@ -5,9 +5,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * TODO: move dimens to resources
- * */
 @Immutable
 data class AppDimensions(
     val zero: Dp = 0.dp,

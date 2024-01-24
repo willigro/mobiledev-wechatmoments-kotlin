@@ -40,7 +40,6 @@ class MomentsUseCaseImpl @Inject constructor(
         val result = try {
             repository.fetchUser()
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
 
@@ -51,7 +50,6 @@ class MomentsUseCaseImpl @Inject constructor(
         allTweets = try {
             repository.fetchTweets().mapToTweetBean()
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
 

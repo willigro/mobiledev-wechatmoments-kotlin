@@ -54,6 +54,16 @@ import kotlinx.coroutines.launch
 private const val TAG = "MainScreen##"
 private const val IMAGE_SPAN_COUNT = 3
 
+private const val ONE_PICTURE = 1
+private const val FOUR_PICTURES = 4
+
+// TODO move these colors to the materials
+//  names aren't represeting the right color, but an aproximation
+val blue = Color(0xFF4152C9)
+val red = Color(0xFFC21149)
+val grey = Color(0xFF333333)
+val white = Color(0xFFF0F0F0)
+
 @Composable
 fun MainScreenRoot(
     viewModel: MainViewModel = hiltViewModel()
@@ -178,7 +188,7 @@ private fun MomentItemComponent(
 
             Text(
                 text = tweetBean.sender?.nick.orEmpty(),
-                color = Color(0xFF4152C9), // TODO (rittmann) move to material
+                color = blue, // TODO (rittmann) move to material
                 modifier = Modifier
                     .constrainAs(senderNickname) {
                         top.linkTo(senderAvatar.top)
@@ -205,7 +215,7 @@ private fun MomentItemComponent(
                 Text(
                     text = tweetBean.content.orEmpty(),
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF333333) // TODO (rittmann) move to material
+                        color = grey // TODO (rittmann) move to material
                     ),
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
@@ -230,7 +240,7 @@ private fun MomentItemComponent(
                         top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
                     )
                     .background(
-                        color = Color(0xFFF0F0F0), // TODO (rittmann) move to material
+                        color = white, // TODO (rittmann) move to material
                         shape = RoundedCornerShapeSmall,
                     ),
             ) {
@@ -289,7 +299,7 @@ private fun MomentItemComponent(
                             text = buildAnnotatedString {
                                 withStyle(
                                     style = SpanStyle(
-                                        color = Color(0xFFC21149), // TODO (rittmann) move to material
+                                        color = red, // TODO (rittmann) move to material
                                         fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
                                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
                                         letterSpacing = MaterialTheme.typography.bodySmall.letterSpacing,
@@ -342,7 +352,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
         ?.toList()
         ?.also { filteredList ->
             when (filteredList.size) {
-                1 -> {
+                ONE_PICTURE -> {
                     // TODO (rittmann) apply this calc to the size, see [SingleImageView]
                     // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
                     SubcomposeAsyncImage(
@@ -366,7 +376,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                     )
                 }
 
-                4 -> {
+                FOUR_PICTURES -> {
                     filteredList.chunked(2).forEach { photos ->
                         Row(modifier = Modifier.fillMaxWidth()) {
                             photos.forEachIndexed { index, photo ->
@@ -513,7 +523,7 @@ private fun CommentComponent(commentsBean: CommentsBean) {
     val annotatedString = buildAnnotatedString {
         withStyle(
             style = SpanStyle(
-                color = Color(0xFF4152C9), // TODO (rittmann) move to material
+                color = blue, // TODO (rittmann) move to material
                 fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
                 fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                 letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,

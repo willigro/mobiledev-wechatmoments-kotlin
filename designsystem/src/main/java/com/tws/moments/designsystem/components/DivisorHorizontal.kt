@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.tws.moments.designsystem.theme.AppTheme
 
+private val white = Color(0xFFCDCDCD) // TODO (rittmann) move it to material
+
 @Composable
 fun DivisorHorizontal(
     modifier: Modifier = Modifier
@@ -18,6 +20,6 @@ fun DivisorHorizontal(
         modifier = modifier
             .fillMaxWidth()
             .height(AppTheme.dimensions.dividerThickness)
-            .background(Color(0xFFCDCDCD)) // TODO (rittmann) move it to material
+            .background(white)
     )
 }

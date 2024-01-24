@@ -18,6 +18,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 
+
+private const val NETWORK_CACHE_SECONDS = 60
+private const val OFFLINE_CACHE_MINUTES = 15
+private const val CACHE_SIZE = (5 * 1024 * 1024).toLong()
+
 @Module
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
@@ -32,7 +37,7 @@ class NetworkModule {
 
             if (hasNetwork(context) == true) {
                 val cacheControl = CacheControl.Builder()
-                    .maxAge(60, TimeUnit.SECONDS)
+                    .maxAge(NETWORK_CACHE_SECONDS, TimeUnit.SECONDS)
                     .build()
 
                 request
@@ -40,7 +45,7 @@ class NetworkModule {
                     .header("Cache-Control", cacheControl.toString()).build()
             } else {
                 val cacheControl = CacheControl.Builder()
-                    .maxStale(15, TimeUnit.MINUTES)
+                    .maxStale(OFFLINE_CACHE_MINUTES, TimeUnit.MINUTES)
                     .onlyIfCached()
                     .build()
 
@@ -59,8 +64,7 @@ class NetworkModule {
         @ApplicationContext context: Context,
         @Named("cache-interceptor") cacheInterceptor: Interceptor,
     ): OkHttpClient {
-        val cacheSize = (5 * 1024 * 1024).toLong()
-        val myCache = Cache(context.cacheDir, cacheSize)
+        val myCache = Cache(context.cacheDir, CACHE_SIZE)
 
         return OkHttpClient.Builder()
             .cache(myCache)
