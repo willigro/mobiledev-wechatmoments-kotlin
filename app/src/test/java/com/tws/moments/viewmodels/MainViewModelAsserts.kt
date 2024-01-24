@@ -64,7 +64,6 @@ internal fun MainUiState.assertUserInfoNull() {
 }
 
 internal fun MainUiState.assertUserBean(username: String) {
-    println("assertUserBean=${userBean}")
     assertEquals(username, userBean!!.username)
 }
 

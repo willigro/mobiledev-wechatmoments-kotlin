@@ -10,8 +10,6 @@ import com.tws.moments.designsystem.utils.ScreenAdaptiveUtil
 import com.tws.moments.ui.main.MainScreenRoot
 import dagger.hilt.android.AndroidEntryPoint
 
-private const val TAG = "MainActivity##"
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

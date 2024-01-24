@@ -2,10 +2,10 @@ package com.tws.moments.datasource.usecase
 
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
-import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.mappers.mapToTweetBean
 import com.tws.moments.datasource.repository.MomentRepository
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
