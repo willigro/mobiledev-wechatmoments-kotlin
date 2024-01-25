@@ -264,7 +264,7 @@ class MainViewModelUnitTest {
 
                 awaitItem().assertFetchingMoreTweets()
 
-                awaitItem().assertFetchingMoreTweetsConcluded(3)
+                awaitItem().assertFetchingMoreTweetsConcluded(size = 3)
 
                 cancelAndConsumeRemainingEvents()
             }
