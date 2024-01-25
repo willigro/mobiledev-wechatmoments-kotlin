@@ -3,6 +3,7 @@ package com.tws.moments.datasource.usecase
 import com.tws.moments.datasource.api.entry.TweetBeanApi
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.repository.MomentRepository
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.CoroutineDispatcherHelper
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.utis.assert
@@ -104,7 +105,7 @@ class MomentsUseCaseTest {
 
         momentsUseCase.fetchTweets()
             .assertSize(size = 1)
-            .assertInstance()
+            .assertInstance(TweetBean::class.java)
     }
 
     @Test
@@ -126,11 +127,11 @@ class MomentsUseCaseTest {
 
         momentsUseCase.fetchTweets()
             .assertSize(size = 2)
-            .assertInstance()
+            .assertInstance(TweetBean::class.java)
             .assert { tweetBean ->
                 assertThat(tweetBean.content, `is`(firstTweetBean.content))
             }
-            .assertInstance(1)
+            .assertInstance(type = TweetBean::class.java, index = 1)
             .assert(1) { tweetBean ->
                 assertThat(tweetBean.content, `is`(secondTweetBean.content))
 

@@ -19,8 +19,8 @@ fun <T> List<T>?.assertNotEmpty(): List<T> {
     return this
 }
 
-inline fun <reified T> List<T>?.assertInstance(index: Int = 0): List<T> {
-    assertThat(this!![index], instanceOf(T::class.java))
+fun <T> List<T>?.assertInstance(type: Class<T>, index: Int = 0): List<T> {
+    assertThat(this!![index], instanceOf(type))
     return this
 }
 
