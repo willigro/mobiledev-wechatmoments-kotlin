@@ -24,9 +24,12 @@ jobs:
         with:
           args:  --config ./config/detekt/detekt.yml
 
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+
       - name: Gradle
         run: ./gradlew build
-        # Execute unit tests
+        
       - name: Unit Test
         run: ./gradlew testDebugUnitTest
 
