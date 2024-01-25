@@ -12,6 +12,8 @@ style:
   UnusedPrivateMember:
     active: true
     ignoreAnnotated: [ 'Preview' ]
+  UnusedPrivateProperty:
+    active: false
   DestructuringDeclarationWithTooManyEntries:
     active: false
   OptionalWhenBraces:
