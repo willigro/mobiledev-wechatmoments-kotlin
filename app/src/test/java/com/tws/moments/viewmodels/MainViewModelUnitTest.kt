@@ -229,7 +229,7 @@ class MainViewModelUnitTest {
 
             awaitItem().assertFetchingMoreTweets()
 
-            awaitItem().assertFetchingMoreTweetsConcluded(2)
+            awaitItem().assertFetchingMoreTweetsConcluded(size = 2)
 
             cancelAndConsumeRemainingEvents()
         }
@@ -294,7 +294,7 @@ class MainViewModelUnitTest {
 
             awaitItem().assertFetchingMoreTweets()
 
-            awaitItem().assertFetchingMoreTweetsConcluded(1)
+            awaitItem().assertFetchingMoreTweetsConcluded(size = 1)
 
             cancelAndConsumeRemainingEvents()
         }
@@ -321,7 +321,7 @@ class MainViewModelUnitTest {
 
                 awaitItem().assertFetchingMoreTweets()
 
-                awaitItem().assertFetchingMoreTweetsConcluded(1)
+                awaitItem().assertFetchingMoreTweetsConcluded(size = 1)
 
                 cancelAndConsumeRemainingEvents()
             }
