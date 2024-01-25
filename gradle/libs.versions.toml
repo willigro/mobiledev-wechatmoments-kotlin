@@ -17,11 +17,6 @@ constraintlayout-compose = "1.0.1"
 junit = "4.13.2"
 lifecycle-runtime-ktx = "2.7.0"
 core-ktx = "1.12.0"
-mockito-mockito-kotlin = "5.0.0"
-mockito-android = "5.4.0"
-mockito-mockito-core = "5.4.0"
-mockito-kotlin = "5.0.0"
-mockito-core = "5.4.0"
 robolectric = "4.10.3"
 daggerHilt = "2.48"
 daggerPlugin = "2.48"
@@ -63,14 +58,9 @@ app-cash-turbine = { module = "app.cash.turbine:turbine", version = "1.0.0" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
-kotlin-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-mockito-kotlin" }
-mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockito-android" }
-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito-mockito-core" }
-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito-core" }
 io-mockk = { module = "io.mockk:mockk", version = "1.12.2" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
-#testImplementation ''
+org-hamcrest = { module = "org.hamcrest:hamcrest", version = "2.2" }
 
 # gson (json converter)
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
@@ -104,22 +94,18 @@ test = [
     "androidx-junit",
     "androidx-lifecycle-runtime-ktx",
     "androidx-core-ktx",
-    "kotlin-mockito-kotlin",
-    "mockito-core",
     "robolectric",
     "androidx-arch-core",
     "org-jetbrains-kotlinx-core",
     "org-jetbrains-kotlinx-test",
     "io-mockk",
     "app-cash-turbine",
+    "org-hamcrest"
 ]
 android-test = [
     "androidx-test",
     "androidx-compose-ui-test",
     "androidx-compose-ui-test-manifest",
-    "mockito-mockito-core",
-    "mockito-android",
-    "mockito-kotlin",
 ]
 
 [plugins]
