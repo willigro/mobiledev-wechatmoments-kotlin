@@ -1,5 +1,6 @@
 package com.tws.moments.datasource.usecase
 
+import androidx.annotation.VisibleForTesting
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.UserBean
@@ -27,7 +28,8 @@ interface MomentsUseCase {
     ): Flow<ResultUC<List<CommentsBean>?>>
 }
 
-private const val PAGE_TWEET_COUNT = 5
+@VisibleForTesting
+const val PAGE_TWEET_COUNT = 5
 
 class MomentsUseCaseImpl @Inject constructor(
     private val iDispatcher: IDispatcher,
