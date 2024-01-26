@@ -207,12 +207,12 @@ class MomentsUseCaseTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun `load more tweets, page index smaller then zero`() = runTest {
-        momentsUseCase.loadMoreTweets(-1).first()
+        momentsUseCase.loadMoreTweets(pageIndex = -1).first()
     }
 
     @Test
     fun `load more tweets, page index higher then page count, return failure`() = runTest {
-        momentsUseCase.loadMoreTweets(1000000).first().assertFailure()
+        momentsUseCase.loadMoreTweets(pageIndex = 1000000).first().assertFailure()
     }
 
     @Test
