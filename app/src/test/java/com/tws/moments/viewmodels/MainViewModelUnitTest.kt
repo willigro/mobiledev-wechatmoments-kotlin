@@ -347,10 +347,16 @@ class MainViewModelUnitTest {
             }
 
             mainViewModel.onEvent(
-                MainEvent.ShareNewComment(firstTweet, newComment)
+                MainEvent.ShareNewComment(
+                    tweetBean = firstTweet,
+                    comment = newComment,
+                )
             )
 
-            awaitItem().assertSendingComment(firstTweet, null)
+            awaitItem().assertSendingComment(
+                tweetBean = firstTweet,
+                size = 0,
+            )
 
             awaitItem().assertNewCommentDone()
 

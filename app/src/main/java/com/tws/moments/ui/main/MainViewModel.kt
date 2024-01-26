@@ -59,7 +59,9 @@ class MainViewModel @Inject constructor(
                 tweetBean = tweetBean,
                 comment = comment,
             ).collect {
-                _uiState.update { it.copy(isSendingComment = false) }
+                _uiState.update {
+                    it.copy(isSendingComment = false)
+                }
             }
         }
     }

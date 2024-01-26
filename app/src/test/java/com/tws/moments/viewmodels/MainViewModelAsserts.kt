@@ -67,7 +67,7 @@ internal fun MainUiState.assertUserBean(username: String) {
     assertEquals(username, userBean!!.username)
 }
 
-internal fun MainUiState.assertSendingComment(tweetBean: TweetBean, size: Int?) {
+internal fun MainUiState.assertSendingComment(tweetBean: TweetBean, size: Int = 0) {
     if (size == null) {
         assertNull(tweetBean.comments)
     } else {

@@ -12,10 +12,12 @@ import com.tws.moments.datasource.utis.assertInstance
 import com.tws.moments.datasource.utis.assertNotEmpty
 import com.tws.moments.datasource.utis.assertSize
 import com.tws.moments.datasource.utis.assertSuccess
+import com.tws.moments.datasource.utis.mockTweetBean
 import com.tws.moments.datasource.utis.mockTweetBeanApi
 import com.tws.moments.datasource.utis.mockTweetBeanApiCommented
 import com.tws.moments.datasource.utis.mockTweetBeanApiError
 import com.tws.moments.datasource.utis.mockTweetBeanApiUnknownError
+import com.tws.moments.datasource.utis.mockTweetBeanCommented
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
@@ -235,6 +237,54 @@ class MomentsUseCaseTest {
             .assertSuccess()
             .value!!
             .assertSize(size = 0)
+    }
+
+    @Test
+    fun `share comment, fails when comment is empty`() = runTest {
+        momentsUseCase.shareComment(
+            tweetBean = mockTweetBean(),
+            comment = "",
+        ).first().assertFailure()
+    }
+
+    @Test
+    fun `share comment, create the first comment`() = runTest {
+        val comment = "first comment"
+        val tweetBean = mockTweetBean()
+
+        momentsUseCase.shareComment(
+            tweetBean = tweetBean,
+            comment = comment,
+        )
+            .first()
+            .assertSuccess()
+            .value!!
+            .assertSize(size = 1)
+            .assert { commentBean ->
+                assertThat(comment, `is`(commentBean.content))
+            }
+
+        tweetBean.comments.assertSize(size = 1)
+    }
+
+    @Test
+    fun `share comment, add a new comment to a tweet already commented`() = runTest {
+        val comment = "second comment"
+        val tweetBean = mockTweetBeanCommented()
+
+        momentsUseCase.shareComment(
+            tweetBean = tweetBean,
+            comment = comment,
+        )
+            .first()
+            .assertSuccess()
+            .value!!
+            .assertSize(size = 2)
+            .assert(index = 1) { commentBean ->
+                assertThat(comment, `is`(commentBean.content))
+            }
+
+        tweetBean.comments.assertSize(size = 2)
     }
 
     private suspend fun mockAllTweets(size: Int, mock: (() -> TweetBeanApi)? = null) {

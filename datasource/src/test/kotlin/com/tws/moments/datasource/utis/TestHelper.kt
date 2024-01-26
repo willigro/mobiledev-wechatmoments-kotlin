@@ -1,8 +1,11 @@
 package com.tws.moments.datasource.utis
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.TweetBeanApi
+import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
@@ -67,6 +70,26 @@ fun mockTweetBeanApi(
 ) = TweetBeanApi(
     content = content,
     sender = sender,
+)
+
+fun mockTweetBean(
+    content: String? = "content",
+    sender: SenderBean? = mockSenderBean(),
+) = TweetBean(
+    content = content,
+    sender = sender,
+)
+
+fun mockTweetBeanCommented(
+    content: String? = "content",
+    sender: SenderBean? = mockSenderBean(),
+    comments: SnapshotStateList<CommentsBean> = mutableStateListOf(
+        mockCommentBean(),
+    ),
+) = TweetBean(
+    content = content,
+    sender = sender,
+    comments = comments,
 )
 
 fun mockTweetBeanApiError(

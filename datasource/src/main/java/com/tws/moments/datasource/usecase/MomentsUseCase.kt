@@ -99,13 +99,9 @@ class MomentsUseCaseImpl @Inject constructor(
             sender = SenderBean("nick", null, null),
         )
 
-        if (tweetBean.comments == null) {
-            emit(ResultUC.success(arrayListOf(commentBean)))
-        } else {
-            tweetBean.comments.add(commentBean)
+        tweetBean.comments.add(commentBean)
 
-            emit(ResultUC.success())
-        }
+        emit(ResultUC.success(tweetBean.comments))
     }.flowOn(iDispatcher.dispatcherDefault())
 
     private val pageCount: Int
