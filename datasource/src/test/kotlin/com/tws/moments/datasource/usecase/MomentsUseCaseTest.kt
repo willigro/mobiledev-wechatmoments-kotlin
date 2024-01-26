@@ -7,15 +7,18 @@ import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.CoroutineDispatcherHelper
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.utis.assert
+import com.tws.moments.datasource.utis.assertFailure
 import com.tws.moments.datasource.utis.assertInstance
 import com.tws.moments.datasource.utis.assertNotEmpty
 import com.tws.moments.datasource.utis.assertSize
+import com.tws.moments.datasource.utis.assertSuccess
 import com.tws.moments.datasource.utis.mockTweetBeanApi
 import com.tws.moments.datasource.utis.mockTweetBeanApiCommented
 import com.tws.moments.datasource.utis.mockTweetBeanApiError
 import com.tws.moments.datasource.utis.mockTweetBeanApiUnknownError
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
@@ -198,5 +201,53 @@ class MomentsUseCaseTest {
         )
 
         momentsUseCase.fetchTweets().assertSize(size = 1)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `load more tweets, page index smaller then zero`() = runTest {
+        momentsUseCase.loadMoreTweets(-1).first()
+    }
+
+    @Test
+    fun `load more tweets, page index higher then page count, return failure`() = runTest {
+        momentsUseCase.loadMoreTweets(1000000).first().assertFailure()
+    }
+
+    @Test
+    fun `load more tweets, return items inside the page count boundaries`() = runTest {
+        mockAllTweets(size = 20)
+
+        momentsUseCase.loadMoreTweets(pageIndex = 1)
+            .first()
+            .assertSuccess()
+            .value!!
+            .assertSize(PAGE_TWEET_COUNT)
+    }
+
+    @Test
+    fun `load more tweets, mock tweets with error, returns empty`() = runTest {
+        mockAllTweets(size = 20) {
+            mockTweetBeanApiError()
+        }
+
+        momentsUseCase.loadMoreTweets(pageIndex = 1)
+            .first()
+            .assertSuccess()
+            .value!!
+            .assertSize(size = 0)
+    }
+
+    private suspend fun mockAllTweets(size: Int, mock: (() -> TweetBeanApi)? = null) {
+        val pageOneResult = arrayListOf<TweetBeanApi>()
+
+        for (i in 0 until size) {
+            pageOneResult.add(mock?.invoke() ?: mockTweetBeanApi())
+        }
+
+        coEvery {
+            momentRepository.fetchTweets()
+        } returns pageOneResult
+
+        momentsUseCase.fetchTweets()
     }
 }

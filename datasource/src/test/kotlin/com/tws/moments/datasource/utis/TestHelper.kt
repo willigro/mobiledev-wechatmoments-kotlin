@@ -3,6 +3,7 @@ package com.tws.moments.datasource.utis
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.TweetBeanApi
+import com.tws.moments.datasource.usecase.helpers.ResultUC
 import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
@@ -31,6 +32,16 @@ fun <T> List<T>?.assert(
     callback(
         this!![index]
     )
+    return this
+}
+
+fun <T> ResultUC<T>.assertFailure(): ResultUC<T> {
+    assertTrue(isFailure)
+    return this
+}
+
+fun <T> ResultUC<T>.assertSuccess(): ResultUC<T> {
+    assertTrue(isSuccess)
     return this
 }
 
