@@ -27,48 +27,58 @@ private const val CACHE_SIZE = (5 * 1024 * 1024).toLong()
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
 
-    @Named("cache-interceptor")
+    @Named("online-cache-interceptor")
     @Provides
-    fun provideCacheInterceptor(
-        @ApplicationContext context: Context,
-    ): Interceptor {
+    fun provideOnlineCacheInterceptor(): Interceptor {
         return Interceptor { chain ->
             val request = chain.proceed(chain.request())
 
-            if (hasNetwork(context) == true) {
-                val cacheControl = CacheControl.Builder()
-                    .maxAge(NETWORK_CACHE_SECONDS, TimeUnit.SECONDS)
-                    .build()
+            val cacheControl = CacheControl.Builder()
+                .maxAge(NETWORK_CACHE_SECONDS, TimeUnit.SECONDS)
+                .build()
 
-                request
-                    .newBuilder()
-                    .header("Cache-Control", cacheControl.toString()).build()
-            } else {
+            request
+                .newBuilder()
+                .header("Cache-Control", cacheControl.toString()).build()
+        }
+    }
+
+    @Named("offline-cache-interceptor")
+    @Provides
+    fun provideOfflineCacheInterceptor(
+        @ApplicationContext context: Context,
+    ): Interceptor {
+        return Interceptor { chain ->
+            var request = chain.request()
+
+            if (hasNetwork(context) != true) {
                 val cacheControl = CacheControl.Builder()
                     .maxStale(OFFLINE_CACHE_MINUTES, TimeUnit.MINUTES)
                     .onlyIfCached()
                     .build()
 
-                request
+                request = request
                     .newBuilder()
-                    .header(
-                        "Cache-Control",
-                        cacheControl.toString()
-                    ).build()
+                    .header("Cache-Control", cacheControl.toString())
+                    .build()
             }
+
+            chain.proceed(request)
         }
     }
 
     @Provides
     fun provesOkHttpClient(
         @ApplicationContext context: Context,
-        @Named("cache-interceptor") cacheInterceptor: Interceptor,
+        @Named("online-cache-interceptor") onlineCacheInterceptor: Interceptor,
+        @Named("offline-cache-interceptor") offlineCacheInterceptor: Interceptor,
     ): OkHttpClient {
         val myCache = Cache(context.cacheDir, CACHE_SIZE)
 
         return OkHttpClient.Builder()
             .cache(myCache)
-            .addInterceptor(cacheInterceptor)
+            .addNetworkInterceptor(onlineCacheInterceptor)
+            .addInterceptor(offlineCacheInterceptor)
             .build()
     }
 
