@@ -29,6 +29,8 @@ complexity:
   LongMethod:
     active: true
     ignoreAnnotated: [ 'Composable' ]
+  TooManyFunctions: # TODO (rittmann) can be useful, but need to ignore for UI, see it later
+    active: false
 
 naming:
   PackageNaming:
