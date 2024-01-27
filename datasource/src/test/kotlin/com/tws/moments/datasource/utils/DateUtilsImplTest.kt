@@ -9,8 +9,9 @@ import org.junit.Test
 
 class DateUtilsImplTest {
 
-    //  27 Jan 2024 around 12:18:00
-    private val mockedTimeInMillis = 1706368680000
+    private var mockedTimeInMillis: Long = DateUtilsImpl(
+        RealAppClock()
+    ).parse("2024-01-27 12:18:00").timeInMillis
 
     @Test
     fun `formatDateFromServerToTimeLapsed with null date`() {

@@ -1,8 +1,10 @@
 package com.tws.moments.datasource.utils
 
 import android.annotation.SuppressLint
+import android.app.LocaleConfig
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -10,6 +12,7 @@ const val ONE_DAY_IN_MILLIS = 1_000L * 60 * 60 * 24
 
 interface DateUtils {
     fun formatDateFromServerToTimeLapsed(string: String?): String?
+    fun parse(string: String): Calendar
 }
 
 @SuppressLint("SimpleDateFormat")
@@ -19,12 +22,15 @@ class DateUtilsImpl @Inject constructor(
     private val serverFormat = "yyyy-MM-dd HH:mm:ss"
     private val representativeFormat = "yyyy-MM-dd 'at' HH:mm:ss"
 
+    // TODO (rittmann) inject it? const?
+    private val locale: Locale = Locale.getDefault()
+
     override fun formatDateFromServerToTimeLapsed(string: String?): String? {
         if (string == null) return null
 
-        val date = SimpleDateFormat(serverFormat).parse(string) ?: return null
+        val date = SimpleDateFormat(serverFormat, locale).parse(string) ?: return null
 
-        val now = Calendar.getInstance().apply {
+        val now = Calendar.getInstance(locale).apply {
             timeInMillis = clock.now()
         }
 
@@ -48,6 +54,14 @@ class DateUtilsImpl @Inject constructor(
 
                 else -> "$hours hours ago"
             }
+        }
+    }
+
+    override fun parse(string: String): Calendar {
+        val date = SimpleDateFormat(serverFormat, locale).parse(string) ?: return Calendar.getInstance(locale)
+
+        return Calendar.getInstance(locale).apply {
+            timeInMillis = date.time
         }
     }
 }
