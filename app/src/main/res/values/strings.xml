@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TheWeChatMoments</string>
+
+    <string name="content_description_take_pictures">Take pictures</string>
 </resources>

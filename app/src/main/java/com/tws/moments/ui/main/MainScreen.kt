@@ -1,6 +1,10 @@
 package com.tws.moments.ui.main
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +17,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -23,12 +31,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -56,6 +71,9 @@ private const val IMAGE_SPAN_COUNT = 3
 
 private const val ONE_PICTURE = 1
 private const val FOUR_PICTURES = 4
+
+private const val ANIMATION_VISIBILITY_DURATION = 150
+private const val ANIMATION_VISIBILITY_DELAY = 150
 
 // TODO move these colors to the materials
 //  names aren't represeting the right color, but an aproximation
@@ -96,6 +114,17 @@ private fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isRefreshing)
 
+    var tweetBeansListPosition by remember {
+        mutableStateOf(
+            Offset(0f, 0f)
+        )
+    }
+
+    val lazyListState = rememberLazyListState()
+    val directionalLazyListState = rememberDirectionalLazyListState(
+        lazyListState
+    )
+
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
         state = swipeRefreshState,
@@ -107,49 +136,43 @@ private fun MainScreen(
             }
         },
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+        Box(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            itemsIndexed(
-                items = uiState.tweets.orEmpty(),
-                key = { _, tweet ->
-                    tweet.id.toString()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned {
+                        tweetBeansListPosition = it.positionInRoot()
+                    },
+                state = lazyListState,
+            ) {
+                item {
+                    MomentHeaderComponent(userBean = uiState.userBean)
                 }
-            ) { index, tweet ->
-                BaseTweetComponent(
-                    tweetBean = tweet,
-                    isHead = index == 0,
-                    userBean = uiState.userBean,
-                    onEvent = onEvent,
-                )
 
-                // Is not loading more data and it is the last item
-                if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
-                    onEvent(
-                        MainEvent.FetchMoreTweets
+                itemsIndexed(
+                    items = uiState.tweets.orEmpty(),
+                    key = { _, tweet ->
+                        tweet.id.toString()
+                    }
+                ) { index, tweet ->
+                    MomentItemComponent(
+                        tweetBean = tweet,
+                        onEvent = onEvent,
                     )
+
+                    // Is not loading more data and it is the last item
+                    if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
+                        onEvent(
+                            MainEvent.FetchMoreTweets
+                        )
+                    }
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun BaseTweetComponent(
-    userBean: UserBean?,
-    tweetBean: TweetBean,
-    isHead: Boolean,
-    onEvent: (MainEvent) -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        if (isHead) {
-            MomentHeaderComponent(userBean = userBean)
+            ToolbarComponent(directionalLazyListState)
         }
-
-        MomentItemComponent(
-            tweetBean = tweetBean,
-            onEvent = onEvent,
-        )
     }
 }
 
@@ -547,6 +570,94 @@ private fun CommentComponent(commentsBean: CommentsBean) {
         annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let {
             // TODO (rittmann) add smt like an animation to react to the click
             Log.i(TAG, "Clicked")
+        }
+    }
+}
+
+@Composable
+private fun ToolbarComponent(
+    directionalLazyListState: DirectionalLazyListState,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        modifier = modifier,
+        enter = slideInVertically(
+            animationSpec = tween(
+                durationMillis = ANIMATION_VISIBILITY_DURATION,
+                delayMillis = ANIMATION_VISIBILITY_DELAY
+            )
+        ),
+        exit = slideOutVertically(
+            animationSpec = tween(
+                durationMillis = ANIMATION_VISIBILITY_DURATION,
+                delayMillis = ANIMATION_VISIBILITY_DELAY
+            )
+        ),
+        visible = directionalLazyListState.showToolbar == ShowToolbar.Show
+    ) {
+        ConstraintLayout(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .7f)) // TODO (rittmann) Move alpha to a AppFloats?
+                .padding(AppTheme.dimensions.paddingToolbar),
+        ) {
+            val (title, camera) = createRefs()
+
+            Text(
+                modifier = Modifier.constrainAs(title) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+                text = "Title",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            IconButton(
+                modifier = Modifier.constrainAs(camera) {
+                    top.linkTo(title.top)
+                    bottom.linkTo(title.bottom)
+                    end.linkTo(parent.end)
+                },
+                onClick = { /*TODO*/ }
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_camera_alt_24),
+                    contentDescription = stringResource(R.string.content_description_take_pictures),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun rememberDirectionalLazyListState(
+    lazyListState: LazyListState,
+): DirectionalLazyListState {
+    return remember {
+        DirectionalLazyListState(lazyListState)
+    }
+}
+
+private enum class ShowToolbar {
+    Show, Hide
+}
+
+private class DirectionalLazyListState(
+    private val lazyListState: LazyListState
+) {
+    val showToolbar by derivedStateOf {
+        if (lazyListState.isScrollInProgress.not()) {
+            ShowToolbar.Show
+        } else {
+            if (lazyListState.firstVisibleItemIndex == 0) {
+                ShowToolbar.Show
+            } else {
+                ShowToolbar.Hide
+            }
         }
     }
 }
