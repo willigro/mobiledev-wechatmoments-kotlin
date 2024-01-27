@@ -4,6 +4,7 @@ import com.tws.moments.datasource.repository.MomentRepository
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.datasource.usecase.MomentsUseCaseImpl
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
+import com.tws.moments.datasource.utils.DateUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,7 @@ class UseCaseModule {
     @Provides
     fun providesUseCaseModule(
         iDispatcher: IDispatcher,
-        repository: MomentRepository
-    ): MomentsUseCase = MomentsUseCaseImpl(iDispatcher, repository)
+        repository: MomentRepository,
+        dateUtils: DateUtils,
+    ): MomentsUseCase = MomentsUseCaseImpl(iDispatcher, repository, dateUtils)
 }

@@ -10,6 +10,7 @@ import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
+import com.tws.moments.datasource.utils.DateUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -34,6 +35,7 @@ const val PAGE_TWEET_COUNT = 5
 class MomentsUseCaseImpl @Inject constructor(
     private val iDispatcher: IDispatcher,
     private val repository: MomentRepository,
+    private val dateUtils: DateUtils,
 ) : MomentsUseCase {
 
     private var allTweets: List<TweetBean>? = null
@@ -50,7 +52,7 @@ class MomentsUseCaseImpl @Inject constructor(
 
     override suspend fun fetchTweets(): List<TweetBean>? {
         allTweets = try {
-            repository.fetchTweets().mapToTweetBean()
+            repository.fetchTweets().mapToTweetBean(dateUtils)
         } catch (e: Exception) {
             null
         }

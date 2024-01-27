@@ -80,7 +80,6 @@ private const val ANIMATION_VISIBILITY_DELAY = 150
 //  names aren't represeting the right color, but an aproximation
 val blue = Color(0xFF4152C9)
 val red = Color(0xFFC21149)
-val grey = Color(0xFF333333)
 val white = Color(0xFFF0F0F0)
 
 @Composable
@@ -177,6 +176,7 @@ private fun MainScreen(
     }
 }
 
+// TODO (rittmann) break into small components
 @Composable
 private fun MomentItemComponent(
     tweetBean: TweetBean,
@@ -238,9 +238,7 @@ private fun MomentItemComponent(
             ) {
                 Text(
                     text = tweetBean.content.orEmpty(),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = grey // TODO (rittmann) move to material
-                    ),
+                    style = MaterialTheme.typography.bodyMedium,
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(
@@ -249,6 +247,15 @@ private fun MomentItemComponent(
                 )
 
                 TweetImages(images = tweetBean.images)
+
+                Text(
+                    modifier = Modifier.padding(
+                        top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                        bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    text = tweetBean.time.orEmpty(),
+                )
             }
 
             Column(

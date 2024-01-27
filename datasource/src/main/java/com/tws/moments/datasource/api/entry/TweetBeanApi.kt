@@ -10,5 +10,6 @@ data class TweetBeanApi(
     val error: String? = null,
     @SerializedName("unknown error")
     val unknownError: String? = null,
+    val time: String? = null,
 )
 

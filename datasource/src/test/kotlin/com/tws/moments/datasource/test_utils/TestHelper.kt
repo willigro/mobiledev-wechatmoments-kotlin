@@ -1,4 +1,4 @@
-package com.tws.moments.datasource.utis
+package com.tws.moments.datasource.test_utils
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList

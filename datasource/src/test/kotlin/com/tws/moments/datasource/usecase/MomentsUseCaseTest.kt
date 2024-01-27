@@ -6,18 +6,20 @@ import com.tws.moments.datasource.repository.MomentRepository
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.CoroutineDispatcherHelper
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
-import com.tws.moments.datasource.utis.assert
-import com.tws.moments.datasource.utis.assertFailure
-import com.tws.moments.datasource.utis.assertInstance
-import com.tws.moments.datasource.utis.assertNotEmpty
-import com.tws.moments.datasource.utis.assertSize
-import com.tws.moments.datasource.utis.assertSuccess
-import com.tws.moments.datasource.utis.mockTweetBean
-import com.tws.moments.datasource.utis.mockTweetBeanApi
-import com.tws.moments.datasource.utis.mockTweetBeanApiCommented
-import com.tws.moments.datasource.utis.mockTweetBeanApiError
-import com.tws.moments.datasource.utis.mockTweetBeanApiUnknownError
-import com.tws.moments.datasource.utis.mockTweetBeanCommented
+import com.tws.moments.datasource.test_utils.assert
+import com.tws.moments.datasource.test_utils.assertFailure
+import com.tws.moments.datasource.test_utils.assertInstance
+import com.tws.moments.datasource.test_utils.assertNotEmpty
+import com.tws.moments.datasource.test_utils.assertSize
+import com.tws.moments.datasource.test_utils.assertSuccess
+import com.tws.moments.datasource.test_utils.mockTweetBean
+import com.tws.moments.datasource.test_utils.mockTweetBeanApi
+import com.tws.moments.datasource.test_utils.mockTweetBeanApiCommented
+import com.tws.moments.datasource.test_utils.mockTweetBeanApiError
+import com.tws.moments.datasource.test_utils.mockTweetBeanApiUnknownError
+import com.tws.moments.datasource.test_utils.mockTweetBeanCommented
+import com.tws.moments.datasource.utils.DateUtilsImpl
+import com.tws.moments.datasource.utils.RealAppClock
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
@@ -42,6 +44,7 @@ class MomentsUseCaseTest {
         momentsUseCase = MomentsUseCaseImpl(
             iDispatcher = iDispatcher,
             repository = momentRepository,
+            dateUtils = DateUtilsImpl(RealAppClock()),
         )
     }
 

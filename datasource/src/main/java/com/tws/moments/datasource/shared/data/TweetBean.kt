@@ -20,6 +20,7 @@ data class TweetBean(
     val error: String? = null,
     @SerializedName("unknown error")
     val unknownError: String? = null,
+    val time: String? = null,
 ) {
     fun noErrorAndWithContent() =
         error.isNullOrEmpty() && unknownError.isNullOrEmpty() && content.isNullOrEmpty().not()
