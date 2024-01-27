@@ -9,6 +9,9 @@ import org.junit.Test
 
 class DateUtilsImplTest {
 
+    //  27 Jan 2024 around 12:18:00
+    private val mockedTimeInMillis = 1706368680000
+
     @Test
     fun `formatDateFromServerToTimeLapsed with null date`() {
         assertNull(DateUtilsImpl(RealAppClock()).formatDateFromServerToTimeLapsed(null))
@@ -19,9 +22,7 @@ class DateUtilsImplTest {
         val clock = mockk<AppClock>()
 
         //  27 Jan 2024 around 12:18:00
-        val mockedNow = 1706368680000
-
-        every { clock.now() } returns mockedNow
+        every { clock.now() } returns mockedTimeInMillis
 
         val result = DateUtilsImpl(clock).formatDateFromServerToTimeLapsed("2024-01-27 08:18:00")
 
@@ -33,9 +34,7 @@ class DateUtilsImplTest {
         val clock = mockk<AppClock>()
 
         //  27 Jan 2024 around 12:18:00
-        val mockedNow = 1706368680000
-
-        every { clock.now() } returns mockedNow
+        every { clock.now() } returns mockedTimeInMillis
 
         val result = DateUtilsImpl(clock).formatDateFromServerToTimeLapsed("2024-01-26 12:18:00")
 
@@ -47,9 +46,7 @@ class DateUtilsImplTest {
         val clock = mockk<AppClock>()
 
         //  27 Jan 2024 around 12:18:00
-        val mockedNow = 1706368680000
-
-        every { clock.now() } returns mockedNow
+        every { clock.now() } returns mockedTimeInMillis
 
         val result = DateUtilsImpl(clock).formatDateFromServerToTimeLapsed("2024-01-22 12:18:00")
 
@@ -61,9 +58,7 @@ class DateUtilsImplTest {
         val clock = mockk<AppClock>()
 
         //  27 Jan 2024 around 12:18:00
-        val mockedNow = 1706368680000
-
-        every { clock.now() } returns mockedNow
+        every { clock.now() } returns mockedTimeInMillis
 
         val result = DateUtilsImpl(clock).formatDateFromServerToTimeLapsed("2024-01-27 11:18:00")
 
@@ -75,9 +70,7 @@ class DateUtilsImplTest {
         val clock = mockk<AppClock>()
 
         //  27 Jan 2024 around 12:18:00
-        val mockedNow = 1706368680000
-
-        every { clock.now() } returns mockedNow
+        every { clock.now() } returns mockedTimeInMillis
 
         val result = DateUtilsImpl(clock).formatDateFromServerToTimeLapsed("2024-01-27 10:18:00")
 
@@ -89,9 +82,7 @@ class DateUtilsImplTest {
         val clock = mockk<AppClock>()
 
         //  27 Jan 2024 around 12:18:00
-        val mockedNow = 1706368680000
-
-        every { clock.now() } returns mockedNow
+        every { clock.now() } returns mockedTimeInMillis
 
         val result = DateUtilsImpl(clock).formatDateFromServerToTimeLapsed("2024-01-27 10:00:00")
 
