@@ -3,6 +3,7 @@ package com.tws.moments.designsystem.theme
 import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -108,6 +109,7 @@ fun TwsMomentsTheme(
 
         else -> if (darkTheme) darkColors else lightColors
     }
+
     // Background theme
     val defaultBackgroundTheme = BackgroundTheme(
         color = colorScheme.surface,
@@ -117,6 +119,7 @@ fun TwsMomentsTheme(
     CompositionLocalProvider(
         LocalBackgroundTheme provides defaultBackgroundTheme,
         LocalDimensions provides dimensions,
+        LocalContentColor provides colorScheme.onSurface,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
