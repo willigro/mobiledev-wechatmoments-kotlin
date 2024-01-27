@@ -7,13 +7,7 @@ style:
     active: true
     maxLineLength: 250
   MagicNumber:
-    active: true
-    ignorePropertyDeclaration: true
-    ignoreNumbers:
-      - '0'
-      - '1'
-      - '1000'
-      - '60'
+    active: false
   UnusedPrivateMember:
     active: true
     ignoreAnnotated: [ 'Preview' ]
