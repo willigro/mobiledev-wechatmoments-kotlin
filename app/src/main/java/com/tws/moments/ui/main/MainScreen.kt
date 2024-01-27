@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,13 +37,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -50,6 +49,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -114,10 +115,8 @@ private fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isRefreshing)
 
-    var tweetBeansListPosition by remember {
-        mutableStateOf(
-            Offset(0f, 0f)
-        )
+    val toolbarHeight = remember {
+        mutableStateOf(0.dp)
     }
 
     val lazyListState = rememberLazyListState()
@@ -140,15 +139,14 @@ private fun MainScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned {
-                        tweetBeansListPosition = it.positionInRoot()
-                    },
+                modifier = Modifier.fillMaxWidth(),
                 state = lazyListState,
             ) {
                 item {
-                    MomentHeaderComponent(userBean = uiState.userBean)
+                    MomentHeaderComponent(
+                        toolbarHeight = toolbarHeight,
+                        userBean = uiState.userBean,
+                    )
                 }
 
                 itemsIndexed(
@@ -171,7 +169,10 @@ private fun MainScreen(
                 }
             }
 
-            ToolbarComponent(directionalLazyListState)
+            ToolbarComponent(
+                directionalLazyListState = directionalLazyListState,
+                toolbarHeight = toolbarHeight,
+            )
         }
     }
 }
@@ -368,6 +369,7 @@ fun CommentTextArea(
 
 @Composable
 private fun TweetImages(images: List<ImagesBean>?) {
+    // TODO it needs to be filtered from the VM or UseCase
     images
         ?.asSequence()
         ?.map { it.url ?: "" }
@@ -471,18 +473,31 @@ private fun GridImageComponent(modifier: Modifier, photo: String) {
 
 @Composable
 private fun MomentHeaderComponent(
+    toolbarHeight: MutableState<Dp>,
     userBean: UserBean?,
 ) {
     ConstraintLayout(
         modifier = Modifier.fillMaxWidth(),
     ) {
 
-        val (userProfile, userAvatar, userNickname) = createRefs()
+        val (toolbarBox, userProfile, userAvatar, userNickname) = createRefs()
+
+        Box(
+            modifier = Modifier
+                .constrainAs(toolbarBox) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    width = Dimension.fillToConstraints
+                }
+                .height(toolbarHeight.value)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        )
 
         SubcomposeAsyncImage(
             modifier = Modifier
                 .constrainAs(userProfile) {
-                    top.linkTo(parent.top)
+                    top.linkTo(toolbarBox.bottom)
                     bottom.linkTo(parent.bottom)
                 }
                 .fillMaxWidth()
@@ -577,10 +592,18 @@ private fun CommentComponent(commentsBean: CommentsBean) {
 @Composable
 private fun ToolbarComponent(
     directionalLazyListState: DirectionalLazyListState,
+    toolbarHeight: MutableState<Dp>,
     modifier: Modifier = Modifier,
 ) {
+    val density = LocalDensity.current
+
     AnimatedVisibility(
-        modifier = modifier,
+        modifier = modifier
+            .onGloballyPositioned {
+                toolbarHeight.value = with(density) {
+                    it.size.height.toDp()
+                }
+            },
         enter = slideInVertically(
             animationSpec = tween(
                 durationMillis = ANIMATION_VISIBILITY_DURATION,
@@ -598,7 +621,7 @@ private fun ToolbarComponent(
         ConstraintLayout(
             modifier = modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .7f)) // TODO (rittmann) Move alpha to a AppFloats?
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .8f)) // TODO (rittmann) Move alpha to a AppFloats?
                 .padding(AppTheme.dimensions.paddingToolbar),
         ) {
             val (title, camera) = createRefs()
