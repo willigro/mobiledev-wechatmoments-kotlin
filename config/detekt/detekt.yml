@@ -9,6 +9,11 @@ style:
   MagicNumber:
     active: true
     ignorePropertyDeclaration: true
+    ignoreNumbers:
+      - '0'
+      - '1'
+      - '1000'
+      - '60'
   UnusedPrivateMember:
     active: true
     ignoreAnnotated: [ 'Preview' ]
@@ -20,7 +25,8 @@ style:
     active: false
   UseRequire:
     active: false
-
+  ReturnCount:
+    active: false
 
 complexity:
   LongParameterList:

@@ -409,7 +409,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                 }
 
                 FOUR_PICTURES -> {
-                    filteredList.chunked(2).forEach { photos ->
+                    filteredList.chunked(size = 2).forEach { photos ->
                         Row(modifier = Modifier.fillMaxWidth()) {
                             photos.forEachIndexed { index, photo ->
                                 GridImageComponent(
