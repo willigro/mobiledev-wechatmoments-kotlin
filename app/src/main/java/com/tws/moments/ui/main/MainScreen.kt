@@ -5,7 +5,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,8 +23,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +41,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -47,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -55,6 +62,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
@@ -63,6 +73,8 @@ import com.tws.moments.datasource.api.entry.ImagesBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
+import com.tws.moments.designsystem.components.ErrorImageComponent
+import com.tws.moments.designsystem.components.LoadingImageComponent
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import kotlinx.coroutines.launch
@@ -135,37 +147,55 @@ private fun MainScreen(
         },
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize()
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                state = lazyListState,
+            Column(
+                modifier = Modifier.fillMaxSize(),
             ) {
-                item {
-                    MomentHeaderComponent(
-                        toolbarHeight = toolbarHeight,
-                        userBean = uiState.userBean,
-                    )
-                }
-
-                itemsIndexed(
-                    items = uiState.tweets.orEmpty(),
-                    key = { _, tweet ->
-                        tweet.id.toString()
-                    }
-                ) { index, tweet ->
-                    MomentItemComponent(
-                        tweetBean = tweet,
-                        onEvent = onEvent,
-                    )
-
-                    // Is not loading more data and it is the last item
-                    if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size ?: 0) - 1) {
-                        onEvent(
-                            MainEvent.FetchMoreTweets
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = lazyListState,
+                ) {
+                    item {
+                        MomentHeaderComponent(
+                            toolbarHeight = toolbarHeight,
+                            userBean = uiState.userBean,
                         )
                     }
+
+                    if (uiState.hasErrorOnTweets.not()) {
+                        itemsIndexed(
+                            items = uiState.tweets.orEmpty(),
+                            key = { _, tweet ->
+                                tweet.id.toString()
+                            }
+                        ) { index, tweet ->
+                            MomentItemComponent(
+                                tweetBean = tweet,
+                                onEvent = onEvent,
+                            )
+
+                            // Is not loading more data and it is the last item
+                            if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size
+                                    ?: 0) - 1
+                            ) {
+                                onEvent(
+                                    MainEvent.FetchMoreTweets
+                                )
+                            }
+                        }
+                    }
                 }
+
+                if (uiState.hasErrorOnTweets) {
+                    TweetsHasNotBeenFoundComponent()
+                }
+            }
+
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
 
             ToolbarComponent(
@@ -173,6 +203,40 @@ private fun MainScreen(
                 toolbarHeight = toolbarHeight,
             )
         }
+    }
+}
+
+@Composable
+fun TweetsHasNotBeenFoundComponent() {
+    ConstraintLayout(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+
+        val (message, image) = createRefs()
+
+        Text(
+            modifier = Modifier
+                .constrainAs(message) {
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(image.top)
+                }
+                .padding(bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsMediumX),
+            text = stringResource(id = R.string.message_tweets_has_not_been_found),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium,
+        )
+
+        val composition by rememberLottieComposition(LottieCompositionSpec.Asset("lottie_anim_empty_result.json"))
+        LottieAnimation(
+            modifier = Modifier.constrainAs(image) {
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                top.linkTo(parent.top)
+                bottom.linkTo(parent.bottom)
+            },
+            composition = composition,
+        )
     }
 }
 
@@ -202,10 +266,7 @@ private fun MomentItemComponent(
                     .size(AppTheme.dimensions.baseTweet.avatarSize),
                 model = tweetBean.sender?.avatar,
                 loading = {
-                    Box(
-                        modifier = Modifier
-                            .background(Color.LightGray)
-                    )
+                    LoadingImageComponent()
                 },
                 contentDescription = stringResource(R.string.content_description_sender_avatar_image)
             )
@@ -399,10 +460,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                         contentScale = ContentScale.Crop,
                         model = filteredList[0],
                         loading = {
-                            Box(
-                                modifier = Modifier
-                                    .background(Color.LightGray) // TODO (rittmann) move to material
-                            )
+                            LoadingImageComponent()
                         },
                         contentDescription = stringResource(R.string.content_description_tweet_picture_image)
                     )
@@ -469,10 +527,7 @@ private fun GridImageComponent(modifier: Modifier, photo: String) {
         contentScale = ContentScale.Crop,
         model = photo,
         loading = {
-            Box(
-                modifier = Modifier
-                    .background(Color.LightGray) // TODO (rittmann) move to material
-            )
+            LoadingImageComponent()
         },
         contentDescription = stringResource(R.string.content_description_tweet_picture_image)
     )
@@ -514,10 +569,10 @@ private fun MomentHeaderComponent(
                 ),
             model = userBean?.profileImage,
             loading = {
-                Box(
-                    modifier = Modifier
-                        .background(Color.LightGray) // TODO (rittmann) move to material
-                )
+                LoadingImageComponent()
+            },
+            error = {
+                ErrorImageComponent()
             },
             contentDescription = stringResource(R.string.content_description_user_profile_image)
         )
@@ -534,9 +589,13 @@ private fun MomentHeaderComponent(
                 ),
             model = userBean?.avatar,
             loading = {
-                Box(
+                LoadingImageComponent()
+            },
+            error = {
+                ErrorImageComponent(
                     modifier = Modifier
-                        .background(Color.LightGray) // TODO (rittmann) move to material
+                        .border(BorderStroke(1.dp, white), CircleShape)
+                        .clip(CircleShape)
                 )
             },
             contentDescription = stringResource(R.string.content_description_user_profile_image)
@@ -545,7 +604,7 @@ private fun MomentHeaderComponent(
         Text(
             text = userBean?.nick.orEmpty(),
             style = MaterialTheme.typography.titleMedium.copy(
-                color = Color.White, // TODO (rittmann) move to material
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Normal
             ),
             modifier = Modifier

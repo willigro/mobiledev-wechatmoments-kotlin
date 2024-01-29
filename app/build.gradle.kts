@@ -79,7 +79,9 @@ dependencies {
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    implementation("io.coil-kt:coil-compose:2.2.0")
+    implementation(libs.coil.compose)
 
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.32.0")
+    implementation(libs.accompanist.swiperefresh)
+
+    implementation(libs.lottie.compose)
 }

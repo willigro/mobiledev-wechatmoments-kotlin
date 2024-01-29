@@ -91,6 +91,8 @@ class MainViewModel @Inject constructor(
                 state.copy(
                     tweets = result?.toMutableStateList(),
                     isRefreshing = false,
+                    isLoading = false,
+                    hasErrorOnTweets = result == null,
                 )
             }
         }

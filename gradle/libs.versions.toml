@@ -1,7 +1,9 @@
 [versions]
+accompanistSwiperefresh = "0.32.0"
 coilCompose = "2.4.0"
 compileSdk = "34"
 java = "17"
+lottieCompose = "6.3.0"
 minSdk = "25"
 targetSdk = "34"
 com-android-application-v = "8.2.1"
@@ -27,6 +29,7 @@ detekt = "1.23.1"
 
 [libraries]
 # compose
+accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayout-compose" }
 # compose bom https://developer.android.com/jetpack/compose/bom
@@ -41,6 +44,7 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 androidx-compose-ui-test = { module = "androidx.compose.ui:ui-test-junit4" }
 androidx-navigation = { module = "androidx.navigation:navigation-compose", version.ref = "compose-navigation" }
 androix-compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.5.4" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit-version" }
 retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit-version" }
 jakewharton = { module = "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter", version.ref = "jakewharton-version" }

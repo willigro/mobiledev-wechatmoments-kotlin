@@ -21,6 +21,8 @@ internal fun MainUiState.assertIdleState() {
     assertNull(tweets)
     assertFalse(isRefreshing)
     assertFalse(isFetchingMore)
+    assertTrue(isLoading)
+    assertFalse(hasErrorOnTweets)
 }
 
 internal fun MainUiState.assertFetchingTweets() {
@@ -44,12 +46,14 @@ internal fun MainUiState.assertFetchTweetsResultNull() {
     assertNull(tweets)
     assertFalse(isRefreshing)
     assertFalse(isFetchingMore)
+    assertFalse(isLoading)
 }
 
 internal fun MainUiState.assertFetchTweetsResult(size: Int) {
     assertEquals(size, tweets!!.size)
     assertFalse(isRefreshing)
     assertFalse(isFetchingMore)
+    assertFalse(isLoading)
 }
 
 internal fun MainUiState.assertFetchTweetsResultContent(size: Int, content: String, index: Int) {
@@ -57,10 +61,12 @@ internal fun MainUiState.assertFetchTweetsResultContent(size: Int, content: Stri
     assertEquals(content, tweets!![index].content)
     assertFalse(isRefreshing)
     assertFalse(isFetchingMore)
+    assertFalse(isLoading)
 }
 
 internal fun MainUiState.assertUserInfoNull() {
     assertNull(userBean)
+    assertTrue(hasErrorOnTweets)
 }
 
 internal fun MainUiState.assertUserBean(username: String) {
