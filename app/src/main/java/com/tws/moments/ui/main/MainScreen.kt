@@ -35,7 +35,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -147,63 +146,80 @@ private fun MainScreen(
             }
         },
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+        MainScreenListingComponent(
+            lazyListState = lazyListState,
+            directionalLazyListState = directionalLazyListState,
+            uiState = uiState,
+            toolbarHeight = toolbarHeight,
+            onEvent = onEvent,
+        )
+    }
+}
+
+@Composable
+private fun MainScreenListingComponent(
+    lazyListState: LazyListState,
+    directionalLazyListState: DirectionalLazyListState,
+    uiState: MainUiState,
+    toolbarHeight: MutableState<Dp>,
+    onEvent: (MainEvent) -> Unit,
+) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                state = lazyListState,
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = lazyListState,
-                ) {
-                    item {
-                        MomentHeaderComponent(
-                            toolbarHeight = toolbarHeight,
-                            userBean = uiState.userBean,
+                item {
+                    MomentHeaderComponent(
+                        toolbarHeight = toolbarHeight,
+                        userBean = uiState.userBean,
+                    )
+                }
+
+                if (uiState.hasErrorOnTweets.not()) {
+                    itemsIndexed(
+                        items = uiState.tweets.orEmpty(),
+                        key = { _, tweet ->
+                            tweet.id.toString()
+                        }
+                    ) { index, tweet ->
+                        MomentItemComponent(
+                            tweetBean = tweet,
+                            onEvent = onEvent,
                         )
-                    }
 
-                    if (uiState.hasErrorOnTweets.not()) {
-                        itemsIndexed(
-                            items = uiState.tweets.orEmpty(),
-                            key = { _, tweet ->
-                                tweet.id.toString()
-                            }
-                        ) { index, tweet ->
-                            MomentItemComponent(
-                                tweetBean = tweet,
-                                onEvent = onEvent,
+                        // Is not loading more data and it is the last item
+                        if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size
+                                ?: 0) - 1
+                        ) {
+                            onEvent(
+                                MainEvent.FetchMoreTweets
                             )
-
-                            // Is not loading more data and it is the last item
-                            if (uiState.isFetchingMore.not() && index == (uiState.tweets?.size
-                                    ?: 0) - 1
-                            ) {
-                                onEvent(
-                                    MainEvent.FetchMoreTweets
-                                )
-                            }
                         }
                     }
                 }
-
-                if (uiState.hasErrorOnTweets) {
-                    TweetsHasNotBeenFoundComponent()
-                }
             }
 
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
+            if (uiState.hasErrorOnTweets) {
+                TweetsHasNotBeenFoundComponent()
             }
+        }
 
-            ToolbarComponent(
-                directionalLazyListState = directionalLazyListState,
-                toolbarHeight = toolbarHeight,
+        if (uiState.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
             )
         }
+
+        ToolbarComponent(
+            directionalLazyListState = directionalLazyListState,
+            toolbarHeight = toolbarHeight,
+        )
     }
 }
 
@@ -286,41 +302,18 @@ private fun MomentItemComponent(
                     )
             )
 
-            Column(
+            ContentAndImagesArea(
                 modifier = Modifier
                     .constrainAs(tweetContent) {
                         top.linkTo(senderNickname.bottom)
                         start.linkTo(senderNickname.start)
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
-                    }
-                    .padding(
-                        start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-                    )
-            ) {
-                Text(
-                    text = tweetBean.content.orEmpty(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 5,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(
-                        bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
-                    )
-                )
+                    },
+                tweetBean = tweetBean,
+            )
 
-                TweetImages(images = tweetBean.images)
-
-                Text(
-                    modifier = Modifier.padding(
-                        top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                        bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-                    ),
-                    style = MaterialTheme.typography.labelMedium,
-                    text = tweetBean.time.orEmpty(),
-                )
-            }
-
-            Column(
+            CommentsArea(
                 modifier = Modifier
                     .constrainAs(comments) {
                         top.linkTo(tweetContent.bottom)
@@ -328,85 +321,10 @@ private fun MomentItemComponent(
                         start.linkTo(tweetContent.start)
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
-                    }
-                    .padding(
-                        top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-                    )
-                    .background(
-                        color = white, // TODO (rittmann) move to material
-                        shape = RoundedCornerShapeSmall,
-                    ),
-            ) {
-                CommentListArea(tweetBean.comments)
-
-                val showCommentArea = remember {
-                    mutableStateOf(false)
-                }
-
-                if (showCommentArea.value) {
-                    ConstraintLayout(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        val (input, button) = createRefs()
-
-                        // TODO (rittmann) update the comment using the an Event? or keep it he?
-                        val comment = remember { mutableStateOf("") }
-
-                        CommentTextArea(
-                            modifier = Modifier
-                                .constrainAs(input) {
-                                    top.linkTo(parent.top)
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                }
-                                .fillMaxWidth(),
-                            comment = comment,
-                        )
-
-                        Button(
-                            modifier = Modifier.constrainAs(button) {
-                                top.linkTo(input.bottom)
-                                end.linkTo(parent.end)
-                            },
-                            onClick = {
-                                onEvent(
-                                    MainEvent.ShareNewComment(tweetBean, comment.value)
-                                )
-
-                                // TODO (rittmann) clear after successfully create the comment?
-                                comment.value = ""
-                            }
-                        ) {
-                            Text(text = "Comment")
-                        }
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-                        ClickableText(
-                            modifier = Modifier.padding(
-                                AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
-                            ),
-                            text = buildAnnotatedString {
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = red, // TODO (rittmann) move to material
-                                        fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
-                                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                        letterSpacing = MaterialTheme.typography.bodySmall.letterSpacing,
-                                    )
-                                ) {
-                                    append("Share a comment")
-                                }
-                            }
-                        ) {
-                            showCommentArea.value = true
-                        }
-                    }
-                }
-            }
+                    },
+                tweetBean = tweetBean,
+                onEvent = onEvent,
+            )
         }
 
         DivisorHorizontal(
@@ -414,6 +332,90 @@ private fun MomentItemComponent(
                 top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
             )
         )
+    }
+}
+
+@Composable
+fun CommentsArea(modifier: Modifier, tweetBean: TweetBean, onEvent: (MainEvent) -> Unit) {
+    Column(
+        modifier = modifier
+            .padding(
+                top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+            )
+            .background(
+                color = white, // TODO (rittmann) move to material
+                shape = RoundedCornerShapeSmall,
+            ),
+    ) {
+        CommentListArea(tweetBean.comments)
+
+        val showCommentArea = remember {
+            mutableStateOf(false)
+        }
+
+        if (showCommentArea.value) {
+            ConstraintLayout(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                val (input, button) = createRefs()
+
+                // TODO (rittmann) update the comment using the an Event? or keep it he?
+                val comment = remember { mutableStateOf("") }
+
+                CommentTextArea(
+                    modifier = Modifier
+                        .constrainAs(input) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                        .fillMaxWidth(),
+                    comment = comment,
+                )
+
+                Button(
+                    modifier = Modifier.constrainAs(button) {
+                        top.linkTo(input.bottom)
+                        end.linkTo(parent.end)
+                    },
+                    onClick = {
+                        onEvent(
+                            MainEvent.ShareNewComment(tweetBean, comment.value)
+                        )
+
+                        // TODO (rittmann) clear after successfully create the comment?
+                        comment.value = ""
+                    }
+                ) {
+                    Text(text = "Comment")
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                ClickableText(
+                    modifier = Modifier.padding(
+                        AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+                    ),
+                    text = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = red, // TODO (rittmann) move to material
+                                fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                letterSpacing = MaterialTheme.typography.bodySmall.letterSpacing,
+                            )
+                        ) {
+                            append("Share a comment")
+                        }
+                    }
+                ) {
+                    showCommentArea.value = true
+                }
+            }
+        }
     }
 }
 
@@ -434,6 +436,39 @@ fun CommentTextArea(
         value = comment.value,
         onValueChange = { comment.value = it },
     )
+}
+
+@Composable
+fun ContentAndImagesArea(
+    modifier: Modifier,
+    tweetBean: TweetBean,
+) {
+    Column(
+        modifier = modifier.padding(
+            start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+        )
+    ) {
+        Text(
+            text = tweetBean.content.orEmpty(),
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 5,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(
+                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+            )
+        )
+
+        TweetImages(images = tweetBean.images)
+
+        Text(
+            modifier = Modifier.padding(
+                top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+            ),
+            style = MaterialTheme.typography.labelMedium,
+            text = tweetBean.time.orEmpty(),
+        )
+    }
 }
 
 @Composable
