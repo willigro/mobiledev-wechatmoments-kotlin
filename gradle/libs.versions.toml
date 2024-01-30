@@ -18,6 +18,7 @@ gson = "2.10.1"
 constraintlayout-compose = "1.0.1"
 junit = "4.13.2"
 lifecycle-runtime-ktx = "2.7.0"
+lifecycle-compose = "2.7.0"
 core-ktx = "1.12.0"
 robolectric = "4.10.3"
 daggerHilt = "2.48"
@@ -61,6 +62,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 app-cash-turbine = { module = "app.cash.turbine:turbine", version = "1.0.0" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-junit" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-compose" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 io-mockk = { module = "io.mockk:mockk", version = "1.12.2" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
@@ -87,7 +89,8 @@ compose = [
     "androidx-compose-ui-tooling-preview",
     "androidx-compose-material3",
     "androidx-constraintlayout-compose",
-    "androidx-activity-compose"
+    "androidx-activity-compose",
+    "androidx-lifecycle-compose"
 ]
 compose-debug = [
     "androidx-compose-ui-tooling",
