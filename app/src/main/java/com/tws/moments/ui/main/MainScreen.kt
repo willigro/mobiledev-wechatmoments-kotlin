@@ -374,6 +374,7 @@ fun CommentsArea(modifier: Modifier, tweetBean: TweetBean, onEvent: (MainEvent) 
                 )
 
                 Button(
+                    enabled = comment.value.isNotEmpty(),
                     modifier = Modifier.constrainAs(button) {
                         top.linkTo(input.bottom)
                         end.linkTo(parent.end)
@@ -387,7 +388,7 @@ fun CommentsArea(modifier: Modifier, tweetBean: TweetBean, onEvent: (MainEvent) 
                         comment.value = ""
                     }
                 ) {
-                    Text(text = "Comment")
+                    Text(text = stringResource(id = R.string.main_screen_share_comment_action))
                 }
             }
         } else {
@@ -395,24 +396,18 @@ fun CommentsArea(modifier: Modifier, tweetBean: TweetBean, onEvent: (MainEvent) 
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
             ) {
-                ClickableText(
+                IconButton(
                     modifier = Modifier.padding(
                         AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
                     ),
-                    text = buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                color = red, // TODO (rittmann) move to material
-                                fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
-                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                                letterSpacing = MaterialTheme.typography.bodySmall.letterSpacing,
-                            )
-                        ) {
-                            append("Share a comment")
-                        }
+                    onClick = {
+                        showCommentArea.value = true
                     }
                 ) {
-                    showCommentArea.value = true
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_add_comment_24),
+                        contentDescription = stringResource(R.string.content_description_type_comment),
+                    )
                 }
             }
         }
