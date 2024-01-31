@@ -3,6 +3,7 @@ package com.tws.moments.datasource.test_utils
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.tws.moments.datasource.api.entry.CommentsBean
+import com.tws.moments.datasource.api.entry.ImagesBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.TweetBeanApi
 import com.tws.moments.datasource.shared.data.TweetBean
@@ -67,9 +68,11 @@ fun mockCommentBean(
 fun mockTweetBeanApi(
     content: String? = "content",
     sender: SenderBean? = mockSenderBean(),
+    images: List<ImagesBean>? = null,
 ) = TweetBeanApi(
     content = content,
     sender = sender,
+    images = images,
 )
 
 fun mockTweetBean(

@@ -69,7 +69,6 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
 import com.tws.moments.datasource.api.entry.CommentsBean
-import com.tws.moments.datasource.api.entry.ImagesBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
@@ -453,7 +452,7 @@ fun ContentAndImagesArea(
             )
         )
 
-        TweetImages(images = tweetBean.images)
+        TweetImages(imageUrls = tweetBean.imagesUrls)
 
         Text(
             modifier = Modifier.padding(
@@ -467,15 +466,10 @@ fun ContentAndImagesArea(
 }
 
 @Composable
-private fun TweetImages(images: List<ImagesBean>?) {
+private fun TweetImages(imageUrls: List<String>?) {
     // TODO it needs to be filtered from the VM or UseCase
-    images
-        ?.asSequence()
-        ?.map { it.url ?: "" }
-        ?.filter { it.isNotEmpty() }
-        ?.toList()
-        ?.also { filteredList ->
-            when (filteredList.size) {
+    imageUrls?.also {
+            when (imageUrls.size) {
                 ONE_PICTURE -> {
                     // TODO (rittmann) apply this calc to the size, see [SingleImageView]
                     // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
@@ -489,7 +483,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                                 bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
                             ),
                         contentScale = ContentScale.Crop,
-                        model = filteredList[0],
+                        model = imageUrls[0],
                         loading = {
                             LoadingImageComponent()
                         },
@@ -498,7 +492,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                 }
 
                 FOUR_PICTURES -> {
-                    filteredList.chunked(size = 2).forEach { photos ->
+                    imageUrls.chunked(size = 2).forEach { photos ->
                         Row(modifier = Modifier.fillMaxWidth()) {
                             photos.forEachIndexed { index, photo ->
                                 GridImageComponent(
@@ -522,7 +516,7 @@ private fun TweetImages(images: List<ImagesBean>?) {
                 }
 
                 else -> {
-                    filteredList.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
+                    imageUrls.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
                         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                             val maxWidth = maxWidth
                             Row(modifier = Modifier.fillMaxWidth()) {

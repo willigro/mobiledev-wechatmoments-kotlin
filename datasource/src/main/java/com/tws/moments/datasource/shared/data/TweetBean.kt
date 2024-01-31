@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.google.gson.annotations.SerializedName
 import com.tws.moments.datasource.api.entry.CommentsBean
-import com.tws.moments.datasource.api.entry.ImagesBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import java.util.UUID
 
@@ -15,7 +14,7 @@ data class TweetBean(
     val id: UUID = UUID.randomUUID(),
     val content: String? = null,
     val sender: SenderBean? = null,
-    val images: List<ImagesBean>? = null,
+    val imagesUrls: List<String>? = null,
     val comments: SnapshotStateList<CommentsBean> = mutableStateListOf(),
     val error: String? = null,
     @SerializedName("unknown error")

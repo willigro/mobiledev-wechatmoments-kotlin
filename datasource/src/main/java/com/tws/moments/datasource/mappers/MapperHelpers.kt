@@ -8,14 +8,17 @@ import com.tws.moments.datasource.utils.DateUtils
 
 fun List<TweetBeanApi>?.mapToTweetBean(
     dateUtils: DateUtils,
-) = this?.map {
+) = this?.map { tweet ->
     TweetBean(
-        content = it.content,
-        sender = it.sender,
-        images = it.images,
-        comments = it.comments?.toMutableStateList() ?: mutableStateListOf(),
-        error = it.error,
-        unknownError = it.unknownError,
-        time = dateUtils.formatDateFromServerToTimeLapsed(it.time),
+        content = tweet.content,
+        sender = tweet.sender,
+        imagesUrls = tweet.images?.asSequence()
+            ?.map { it.url ?: "" }
+            ?.filter { it.isNotEmpty() }
+            ?.toList(),
+        comments = tweet.comments?.toMutableStateList() ?: mutableStateListOf(),
+        error = tweet.error,
+        unknownError = tweet.unknownError,
+        time = dateUtils.formatDateFromServerToTimeLapsed(tweet.time),
     )
 }

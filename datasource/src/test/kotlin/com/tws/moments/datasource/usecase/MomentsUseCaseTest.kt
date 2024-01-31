@@ -1,5 +1,6 @@
 package com.tws.moments.datasource.usecase
 
+import com.tws.moments.datasource.api.entry.ImagesBean
 import com.tws.moments.datasource.api.entry.TweetBeanApi
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.repository.MomentRepository
@@ -27,7 +28,9 @@ import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -108,12 +111,26 @@ class MomentsUseCaseTest {
         coEvery {
             momentRepository.fetchTweets()
         } returns arrayListOf(
-            mockTweetBeanApi()
+            mockTweetBeanApi(
+                images = arrayListOf(
+                    ImagesBean(""), // not valid
+                    ImagesBean("valid 1"),
+                    ImagesBean(null), // not valid
+                    ImagesBean("valid 2"),
+                )
+            )
         )
 
         momentsUseCase.fetchTweets()
             .assertSize(size = 1)
             .assertInstance(TweetBean::class.java)
+            .assert {
+                it.imagesUrls.assertSize(2)
+                it.imagesUrls?.forEach { url ->
+                    assertNotNull(url)
+                    assertTrue(url.isNotEmpty())
+                }
+            }
     }
 
     @Test
