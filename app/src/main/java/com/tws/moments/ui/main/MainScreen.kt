@@ -1,5 +1,6 @@
 package com.tws.moments.ui.main
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -37,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -69,6 +72,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.tws.moments.R
 import com.tws.moments.datasource.api.entry.CommentsBean
+import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
@@ -76,6 +80,7 @@ import com.tws.moments.designsystem.components.ErrorImageComponent
 import com.tws.moments.designsystem.components.LoadingImageComponent
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
+import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainScreen##"
@@ -469,30 +474,56 @@ fun ContentAndImagesArea(
 private fun TweetImages(imageUrls: List<String>?) {
     // TODO it needs to be filtered from the VM or UseCase
     imageUrls?.also {
-            when (imageUrls.size) {
-                ONE_PICTURE -> {
-                    // TODO (rittmann) apply this calc to the size, see [SingleImageView]
-                    // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
-                    SubcomposeAsyncImage(
-                        modifier = Modifier
-                            .size(
-                                width = AppTheme.dimensions.baseTweet.singleImageWidth,
-                                height = AppTheme.dimensions.baseTweet.singleImageHeight,
-                            )
-                            .padding(
-                                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                            ),
-                        contentScale = ContentScale.Crop,
-                        model = imageUrls[0],
-                        loading = {
-                            LoadingImageComponent()
-                        },
-                        contentDescription = stringResource(R.string.content_description_tweet_picture_image)
-                    )
-                }
+        when (imageUrls.size) {
+            ONE_PICTURE -> {
+                // TODO (rittmann) apply this calc to the size, see [SingleImageView]
+                // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
+                SubcomposeAsyncImage(
+                    modifier = Modifier
+                        .size(
+                            width = AppTheme.dimensions.baseTweet.singleImageWidth,
+                            height = AppTheme.dimensions.baseTweet.singleImageHeight,
+                        )
+                        .padding(
+                            bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                        ),
+                    contentScale = ContentScale.Crop,
+                    model = imageUrls[0],
+                    loading = {
+                        LoadingImageComponent()
+                    },
+                    contentDescription = stringResource(R.string.content_description_tweet_picture_image)
+                )
+            }
 
-                FOUR_PICTURES -> {
-                    imageUrls.chunked(size = 2).forEach { photos ->
+            FOUR_PICTURES -> {
+                imageUrls.chunked(size = 2).forEach { photos ->
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        photos.forEachIndexed { index, photo ->
+                            GridImageComponent(
+                                modifier = Modifier
+                                    .padding(
+                                        start = if (index == 0) {
+                                            AppTheme.dimensions.zero
+                                        } else {
+                                            AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
+                                        },
+                                        bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                                    )
+                                    .size(
+                                        AppTheme.dimensions.baseTweet.gridImageSize,
+                                    ),
+                                photo = photo,
+                            )
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                imageUrls.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
+                    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                        val maxWidth = maxWidth
                         Row(modifier = Modifier.fillMaxWidth()) {
                             photos.forEachIndexed { index, photo ->
                                 GridImageComponent(
@@ -506,7 +537,7 @@ private fun TweetImages(imageUrls: List<String>?) {
                                             bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
                                         )
                                         .size(
-                                            AppTheme.dimensions.baseTweet.gridImageSize,
+                                            (maxWidth - (AppTheme.dimensions.paddingSpaceBetweenComponentsSmall * photos.size)) / IMAGE_SPAN_COUNT,
                                         ),
                                     photo = photo,
                                 )
@@ -514,35 +545,9 @@ private fun TweetImages(imageUrls: List<String>?) {
                         }
                     }
                 }
-
-                else -> {
-                    imageUrls.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
-                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                            val maxWidth = maxWidth
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                photos.forEachIndexed { index, photo ->
-                                    GridImageComponent(
-                                        modifier = Modifier
-                                            .padding(
-                                                start = if (index == 0) {
-                                                    AppTheme.dimensions.zero
-                                                } else {
-                                                    AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
-                                                },
-                                                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                                            )
-                                            .size(
-                                                (maxWidth - (AppTheme.dimensions.paddingSpaceBetweenComponentsSmall * photos.size)) / IMAGE_SPAN_COUNT,
-                                            ),
-                                        photo = photo,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
+    }
 }
 
 @Composable
@@ -772,6 +777,106 @@ private class DirectionalLazyListState(
             } else {
                 ShowToolbar.Hide
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview_MainScreen_List_NotFound() {
+    TwsMomentsTheme {
+        MainScreen(
+            uiState = MainUiState(
+                hasErrorOnTweets = true,
+            )
+        ) {
+
+        }
+    }
+}
+
+@SuppressLint("UnrememberedMutableState")
+@Preview(showBackground = true, heightDp = 1800)
+@Composable
+fun Preview_MainScreen_GridingTweets() {
+    TwsMomentsTheme {
+        MainScreen(
+            uiState = MainUiState(
+                userBean = UserBean(
+                    username = "UserName",
+                    nick = "nick",
+                    avatar = "https://techops-recsys-lateral-hiring.github.io/moments-data/images/user/avatar/004.jpeg",
+                    profileImage = "https://techops-recsys-lateral-hiring.github.io/moments-data/images/user/profile-image.jpeg"
+                ),
+                tweets = mutableStateListOf(
+                    TweetBean(
+                        content = "Content 1",
+                        sender = SenderBean(nick = "Sender"),
+                        imagesUrls = listOf("url 1"),
+                    ),
+                    TweetBean(
+                        content = "Content 2",
+                        sender = SenderBean(nick = "Sender"),
+                        imagesUrls = listOf("url 1", "url 1", "url 1"),
+                    ),
+                    TweetBean(
+                        content = "Content 3",
+                        sender = SenderBean(nick = "Sender"),
+                        imagesUrls = listOf("url 1", "url 1", "url 1", "url 1"),
+                    ),
+                    TweetBean(
+                        content = "Content 4",
+                        sender = SenderBean(nick = "Sender"),
+                        imagesUrls = listOf(
+                            "url 1", "url 1", "url 1", "url 1", "url 1", "url 1", "url 1", "url 1",
+                            "url 1"
+                        ),
+                    ),
+                )
+            )
+        ) {
+
+        }
+    }
+}
+
+@SuppressLint("UnrememberedMutableState")
+@Preview(showBackground = true)
+@Composable
+fun Preview_MainScreen_CommentedTweet() {
+    TwsMomentsTheme {
+        MainScreen(
+            uiState = MainUiState(
+                userBean = UserBean(
+                    username = "UserName",
+                    nick = "nick",
+                    avatar = "https://techops-recsys-lateral-hiring.github.io/moments-data/images/user/avatar/004.jpeg",
+                    profileImage = "https://techops-recsys-lateral-hiring.github.io/moments-data/images/user/profile-image.jpeg"
+                ),
+                tweets = mutableStateListOf(
+                    TweetBean(
+                        content = "Content 1",
+                        sender = SenderBean(nick = "Sender"),
+                        imagesUrls = listOf("url 1"),
+                        comments = mutableStateListOf(
+                            CommentsBean(
+                                content = "Comment 1",
+                                sender = SenderBean(
+                                    nick = "nick",
+                                )
+                            ),
+                            CommentsBean(
+                                content = "Comment 2",
+                                sender = SenderBean(
+                                    nick = "nick 2",
+                                )
+                            ),
+                        )
+                    ),
+                )
+            )
+        ) {
+
         }
     }
 }
