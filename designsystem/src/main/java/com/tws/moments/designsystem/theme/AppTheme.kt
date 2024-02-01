@@ -95,7 +95,7 @@ private val darkColors = darkColorScheme(
  */
 @Composable
 fun TwsMomentsTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false, // isSystemInDarkTheme(),
     disableDynamicTheming: Boolean = true,
     dimensions: AppDimensions = AppTheme.dimensions,
     content: @Composable () -> Unit,

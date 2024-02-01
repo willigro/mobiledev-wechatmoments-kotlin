@@ -2,7 +2,6 @@ package com.tws.moments.viewmodels
 
 import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
-import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.ui.main.MainEvent
 import com.tws.moments.ui.main.MainUiState
@@ -58,12 +57,17 @@ internal fun MainUiState.assertFetchTweetsResult(size: Int) {
     assertFalse(isLoading)
 }
 
-internal fun MainUiState.assertFetchTweetsResultContent(size: Int, content: String, index: Int) {
+internal fun MainUiState.assertFetchTweetsResultContent(
+    size: Int,
+    content: String,
+    index: Int,
+): MainUiState {
     assertEquals(size, tweets!!.size)
     assertEquals(content, tweets!![index].content)
     assertFalse(isRefreshing)
     assertFalse(isFetchingMore)
     assertFalse(isLoading)
+    return this
 }
 
 internal fun MainUiState.assertUserInfoNull() {
@@ -74,20 +78,19 @@ internal fun MainUiState.assertUserBean(username: String) {
     assertEquals(username, userBean!!.username)
 }
 
-internal fun MainUiState.assertSendingComment(tweetBean: TweetBean, size: Int = 0) {
-    assertEquals(size, tweetBean.comments.size)
-    assertTrue(isSendingComment)
+internal fun MainUiState.assertSendingComment(index: Int) {
+    assertTrue(tweets!![index].isSendingComment)
 }
 
-internal fun MainUiState.assertNewCommentDone() {
-    assertFalse(isSendingComment)
+internal fun MainUiState.assertNewCommentDone(index: Int) {
+    assertFalse(tweets!![index].isSendingComment)
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal suspend fun TestScope.loadInitialTweetAndAdvance(
     mainViewModel: MainViewModel,
     momentUseCase: MomentsUseCase,
-    validate: suspend TurbineTestContext<MainUiState>.() -> Unit,
+    validate: suspend TurbineTestContext<MainUiState>.(MainUiState) -> Unit,
 ) {
     mainViewModel.uiState.test {
         val initialTweets = arrayListOf(
@@ -106,9 +109,9 @@ internal suspend fun TestScope.loadInitialTweetAndAdvance(
 
         advanceUntilIdle()
 
-        awaitItem().assertFetchTweetsResultContent(1, initialTweets.first().content!!, 0)
+        val state = awaitItem().assertFetchTweetsResultContent(1, initialTweets.first().content!!, 0)
 
-        validate()
+        validate(state)
     }
 }
 

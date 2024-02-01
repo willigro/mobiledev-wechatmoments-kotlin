@@ -26,7 +26,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,9 +79,11 @@ import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.components.ErrorImageComponent
 import com.tws.moments.designsystem.components.LoadingImageComponent
+import com.tws.moments.designsystem.components.recomposeHighlighter
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
+import com.tws.moments.designsystem.theme.appTextFieldColors
 import kotlinx.coroutines.launch
 
 private const val TAG = "MainScreen##"
@@ -96,7 +99,6 @@ private const val ANIMATION_VISIBILITY_DELAY = 150
 //  names aren't represeting the right color, but an aproximation
 val blue = Color(0xFF4152C9)
 val red = Color(0xFFC21149)
-val white = Color(0xFFF0F0F0)
 
 @Composable
 fun MainScreenRoot(
@@ -140,7 +142,9 @@ private fun MainScreen(
     )
 
     SwipeRefresh(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .recomposeHighlighter(),
         state = swipeRefreshState,
         onRefresh = {
             coroutineScope.launch {
@@ -169,7 +173,9 @@ private fun MainScreenListingComponent(
     onEvent: (MainEvent) -> Unit,
 ) {
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .recomposeHighlighter()
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -230,7 +236,9 @@ private fun MainScreenListingComponent(
 @Composable
 fun TweetsHasNotBeenFoundComponent() {
     ConstraintLayout(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .recomposeHighlighter(),
     ) {
 
         val (message, image) = createRefs()
@@ -271,7 +279,8 @@ private fun MomentItemComponent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX)
-            .padding(horizontal = AppTheme.dimensions.paddingScreenDefault),
+            .padding(horizontal = AppTheme.dimensions.paddingScreenDefault)
+            .recomposeHighlighter(),
     ) {
         ConstraintLayout(
             modifier = Modifier.fillMaxWidth(),
@@ -340,16 +349,21 @@ private fun MomentItemComponent(
 }
 
 @Composable
-fun CommentsArea(modifier: Modifier, tweetBean: TweetBean, onEvent: (MainEvent) -> Unit) {
+fun CommentsArea(
+    modifier: Modifier,
+    tweetBean: TweetBean,
+    onEvent: (MainEvent) -> Unit
+) {
     Column(
         modifier = modifier
             .padding(
                 top = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
             )
             .background(
-                color = white, // TODO (rittmann) move to material
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 shape = RoundedCornerShapeSmall,
-            ),
+            )
+            .recomposeHighlighter(),
     ) {
         CommentListArea(tweetBean.comments)
 
@@ -358,43 +372,14 @@ fun CommentsArea(modifier: Modifier, tweetBean: TweetBean, onEvent: (MainEvent) 
         }
 
         if (showCommentArea.value) {
-            ConstraintLayout(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                val (input, button) = createRefs()
+            // TODO (rittmann) update the comment using the an Event? or keep it he?
+            val comment = remember { mutableStateOf("") }
 
-                // TODO (rittmann) update the comment using the an Event? or keep it he?
-                val comment = remember { mutableStateOf("") }
-
-                CommentTextArea(
-                    modifier = Modifier
-                        .constrainAs(input) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        }
-                        .fillMaxWidth(),
-                    comment = comment,
-                )
-
-                Button(
-                    enabled = comment.value.isNotEmpty(),
-                    modifier = Modifier.constrainAs(button) {
-                        top.linkTo(input.bottom)
-                        end.linkTo(parent.end)
-                    },
-                    onClick = {
-                        onEvent(
-                            MainEvent.ShareNewComment(tweetBean, comment.value)
-                        )
-
-                        // TODO (rittmann) clear after successfully create the comment?
-                        comment.value = ""
-                    }
-                ) {
-                    Text(text = stringResource(id = R.string.main_screen_share_comment_action))
-                }
-            }
+            CommentTextArea(
+                tweetBean = tweetBean,
+                comment = comment,
+                onEvent = onEvent,
+            )
         } else {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -427,14 +412,81 @@ fun CommentListArea(comments: List<CommentsBean>?) {
 
 @Composable
 fun CommentTextArea(
-    modifier: Modifier,
+    tweetBean: TweetBean,
     comment: MutableState<String>,
+    onEvent: (MainEvent) -> Unit,
 ) {
     TextField(
-        modifier = modifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(AppTheme.dimensions.paddingSpaceBetweenComponentsMedium)
+            .recomposeHighlighter(),
         value = comment.value,
         onValueChange = { comment.value = it },
+        colors = appTextFieldColors(),
+        trailingIcon = {
+            if (tweetBean.isSendingComment) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(AppTheme.dimensions.progressSizeSmall)
+                )
+            } else {
+                IconButton(
+                    enabled = comment.value.isNotEmpty(),
+                    onClick = {
+                        onEvent(
+                            MainEvent.ShareNewComment(tweetBean, comment.value)
+                        )
+
+                        // TODO (rittmann) clear after successfully create the comment?
+                        comment.value = ""
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = stringResource(id = R.string.content_description_send_comment),
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+            }
+        }
     )
+}
+
+@Composable
+private fun CommentComponent(commentsBean: CommentsBean) {
+    val nick = commentsBean.sender?.nick.orEmpty()
+
+    val annotatedString = buildAnnotatedString {
+        withStyle(
+            style = SpanStyle(
+                color = blue, // TODO (rittmann) move to material
+                fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
+            )
+        ) {
+            pushStringAnnotation(nick, annotation = nick)
+            append(nick)
+        }
+
+        append(": ${commentsBean.content.orEmpty()}")
+    }
+
+    ClickableText(
+        modifier = Modifier
+            .padding(
+                start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+                bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
+            )
+            .recomposeHighlighter(),
+        text = annotatedString,
+    ) { offset ->
+        annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let {
+            // TODO (rittmann) add smt like an animation to react to the click
+            Log.i(TAG, "Clicked")
+        }
+    }
 }
 
 @Composable
@@ -443,9 +495,11 @@ fun ContentAndImagesArea(
     tweetBean: TweetBean,
 ) {
     Column(
-        modifier = modifier.padding(
-            start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
-        )
+        modifier = modifier
+            .padding(
+                start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmallX,
+            )
+            .recomposeHighlighter(),
     ) {
         Text(
             text = tweetBean.content.orEmpty(),
@@ -553,7 +607,7 @@ private fun TweetImages(imageUrls: List<String>?) {
 @Composable
 private fun GridImageComponent(modifier: Modifier, photo: String) {
     SubcomposeAsyncImage(
-        modifier = modifier,
+        modifier = modifier.recomposeHighlighter(),
         contentScale = ContentScale.Crop,
         model = photo,
         loading = {
@@ -569,7 +623,9 @@ private fun MomentHeaderComponent(
     userBean: UserBean?,
 ) {
     ConstraintLayout(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .recomposeHighlighter(),
     ) {
 
         val (toolbarBox, userProfile, userAvatar, userNickname) = createRefs()
@@ -624,7 +680,12 @@ private fun MomentHeaderComponent(
             error = {
                 ErrorImageComponent(
                     modifier = Modifier
-                        .border(BorderStroke(1.dp, white), CircleShape)
+                        .border(
+                            BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            ), CircleShape
+                        )
                         .clip(CircleShape)
                 )
             },
@@ -651,41 +712,6 @@ private fun MomentHeaderComponent(
 }
 
 @Composable
-private fun CommentComponent(commentsBean: CommentsBean) {
-    val nick = commentsBean.sender?.nick.orEmpty()
-
-    val annotatedString = buildAnnotatedString {
-        withStyle(
-            style = SpanStyle(
-                color = blue, // TODO (rittmann) move to material
-                fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
-            )
-        ) {
-            pushStringAnnotation(nick, annotation = nick)
-            append(nick)
-        }
-
-        append(": ${commentsBean.content.orEmpty()}")
-    }
-
-    ClickableText(
-        modifier = Modifier
-            .padding(
-                start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
-            ),
-        text = annotatedString,
-    ) { offset ->
-        annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let {
-            // TODO (rittmann) add smt like an animation to react to the click
-            Log.i(TAG, "Clicked")
-        }
-    }
-}
-
-@Composable
 private fun ToolbarComponent(
     directionalLazyListState: DirectionalLazyListState,
     toolbarHeight: MutableState<Dp>,
@@ -699,7 +725,8 @@ private fun ToolbarComponent(
                 toolbarHeight.value = with(density) {
                     it.size.height.toDp()
                 }
-            },
+            }
+            .recomposeHighlighter(),
         enter = slideInVertically(
             animationSpec = tween(
                 durationMillis = ANIMATION_VISIBILITY_DURATION,
@@ -778,6 +805,19 @@ private class DirectionalLazyListState(
                 ShowToolbar.Hide
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview_CommentTextArea() {
+    TwsMomentsTheme {
+        CommentTextArea(
+            tweetBean = TweetBean(),
+            comment = remember {
+                mutableStateOf("Testing text")
+            }
+        ) {}
     }
 }
 

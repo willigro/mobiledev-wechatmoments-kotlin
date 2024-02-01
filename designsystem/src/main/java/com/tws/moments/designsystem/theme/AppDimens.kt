@@ -25,6 +25,8 @@ data class AppDimensions(
 
     val dividerThickness: Dp = 1.dp,
 
+    val progressSizeSmall: Dp = 20.dp,
+
     val baseTweet: BaseTweet = BaseTweet(),
 )
 

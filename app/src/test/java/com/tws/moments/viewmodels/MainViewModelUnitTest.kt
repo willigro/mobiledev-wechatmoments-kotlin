@@ -1,13 +1,14 @@
 package com.tws.moments.viewmodels
 
 import app.cash.turbine.test
-import com.tws.moments.utils.mockTweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
 import com.tws.moments.ui.main.MainEvent
 import com.tws.moments.ui.main.MainViewModel
 import com.tws.moments.utils.MainDispatcherRule
+import com.tws.moments.utils.mockCommentBean
+import com.tws.moments.utils.mockTweetBean
 import com.tws.moments.utils.mockUserBean
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -332,18 +333,24 @@ class MainViewModelUnitTest {
         loadInitialTweetAndAdvance(
             mainViewModel = mainViewModel,
             momentUseCase = momentUseCase,
-        ) {
+        ) {state ->
             val firstTweet = mainViewModel.uiState.value.tweets!!.first()
             val newComment = "New comment"
 
             coEvery {
                 momentUseCase.shareComment(
                     firstTweet,
-                    newComment
+                    newComment,
                 )
             } returns flow {
                 delay(DELAY_TO_UPDATE_STATE)
-                emit(ResultUC.success())
+                emit(
+                    ResultUC.success(
+                        listOf(
+                            mockCommentBean(newComment)
+                        )
+                    )
+                )
             }
 
             mainViewModel.onEvent(
@@ -353,12 +360,13 @@ class MainViewModelUnitTest {
                 )
             )
 
-            awaitItem().assertSendingComment(
-                tweetBean = firstTweet,
-                size = 0,
-            )
+            state.assertSendingComment(index = 0)
 
-            awaitItem().assertNewCommentDone()
+            delay(DELAY_TO_UPDATE_STATE)
+
+            state.assertNewCommentDone(
+                index = 0,
+            )
 
             cancelAndConsumeRemainingEvents()
         }

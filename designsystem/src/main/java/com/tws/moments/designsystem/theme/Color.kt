@@ -1,5 +1,8 @@
 package com.tws.moments.designsystem.theme
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 
@@ -9,7 +12,7 @@ val md_theme_light_primaryContainer = Color(0xFF9DF898)
 val md_theme_light_onPrimaryContainer = Color(0xFF002204)
 val md_theme_light_secondary = Color(0xFF8B5000)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
-val md_theme_light_secondaryContainer = Color(0xFFFFDCBE)
+val md_theme_light_secondaryContainer = Color(0xFFF0F0F0)
 val md_theme_light_onSecondaryContainer = Color(0xFF2C1600)
 val md_theme_light_tertiary = Color(0xFF38656A)
 val md_theme_light_onTertiary = Color(0xFFFFFFFF)
@@ -64,3 +67,11 @@ val md_theme_dark_shadow = Color(0xFF000000)
 val md_theme_dark_surfaceTint = Color(0xFF82DB7E)
 val md_theme_dark_outlineVariant = Color(0xFF424940)
 val md_theme_dark_scrim = Color(0xFF000000)
+
+@Composable
+fun appTextFieldColors() = TextFieldDefaults.colors(
+    focusedContainerColor = MaterialTheme.colorScheme.background,
+    unfocusedContainerColor = MaterialTheme.colorScheme.background,
+    disabledContainerColor = MaterialTheme.colorScheme.background,
+    errorContainerColor = MaterialTheme.colorScheme.background,
+)

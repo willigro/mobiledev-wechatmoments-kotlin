@@ -53,14 +53,29 @@ class MainViewModel @Inject constructor(
 
     private fun shareNewComment(tweetBean: TweetBean, comment: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isSendingComment = true) }
+            // If for some reason the index change, just try getting the index before each update
+            val indexOfTweet = _uiState.value.tweets?.indexOfFirst { it.id == tweetBean.id }
 
-            useCase.shareComment(
-                tweetBean = tweetBean,
-                comment = comment,
-            ).collect {
-                _uiState.update {
-                    it.copy(isSendingComment = false)
+            if (indexOfTweet != null && indexOfTweet > -1) {
+                _uiState.update { state ->
+                    state.copy(
+                        tweets = state.tweets?.apply {
+                            set(indexOfTweet, tweetBean.copy(isSendingComment = true))
+                        }
+                    )
+                }
+
+                useCase.shareComment(
+                    tweetBean = tweetBean,
+                    comment = comment,
+                ).collect {
+                    _uiState.update { state ->
+                        state.copy(
+                            tweets = state.tweets?.apply {
+                                set(indexOfTweet, state.tweets[indexOfTweet].copy(isSendingComment = false))
+                            }
+                        )
+                    }
                 }
             }
         }

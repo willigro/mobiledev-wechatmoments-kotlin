@@ -2,6 +2,4 @@
     <string name="app_name">TheWeChatMoments</string>
 
     <string name="message_tweets_has_not_been_found">Tweets has not been found</string>
-
-    <string name="main_screen_share_comment_action">Share</string>
 </resources>
