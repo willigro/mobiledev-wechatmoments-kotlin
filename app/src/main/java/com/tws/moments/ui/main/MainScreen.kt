@@ -79,7 +79,9 @@ import com.tws.moments.R
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.UserBean
+import com.tws.moments.datasource.shared.data.StableList
 import com.tws.moments.datasource.shared.data.TweetBean
+import com.tws.moments.datasource.shared.data.toStable
 import com.tws.moments.designsystem.components.CollectSharedState
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.components.ErrorImageComponent
@@ -678,12 +680,12 @@ fun ContentAndImagesArea(
 
 @Composable
 private fun TweetImages(
-    imageUrls: List<String>?,
+    imageUrls: StableList<String>?,
     onEvent: (MainEvent) -> Unit,
 ) {
     // TODO it needs to be filtered from the VM or UseCase
     imageUrls?.also {
-        when (imageUrls.size) {
+        when (imageUrls.list.size) {
             ONE_PICTURE -> {
                 // TODO (rittmann) apply this calc to the size, see [SingleImageView]
                 // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
@@ -698,11 +700,11 @@ private fun TweetImages(
                         )
                         .clickable {
                             onEvent(
-                                MainEvent.OpenImage(listOf(imageUrls[0]))
+                                MainEvent.OpenImage(listOf(imageUrls.list[0]))
                             )
                         },
                     contentScale = ContentScale.Crop,
-                    model = imageUrls[0],
+                    model = imageUrls.list[0],
                     loading = {
                         LoadingImageComponent()
                     },
@@ -711,7 +713,7 @@ private fun TweetImages(
             }
 
             FOUR_PICTURES -> {
-                imageUrls.chunked(size = 2).forEach { photos ->
+                imageUrls.list.chunked(size = 2).forEach { photos ->
                     Row(modifier = Modifier.fillMaxWidth()) {
                         photos.forEachIndexed { index, photo ->
                             GridImageComponent(
@@ -728,7 +730,7 @@ private fun TweetImages(
                                         AppTheme.dimensions.baseTweet.gridImageSize,
                                     ),
                                 photo = photo,
-                                photos = imageUrls,
+                                photos = imageUrls.list,
                                 onEvent = onEvent,
                             )
                         }
@@ -737,7 +739,7 @@ private fun TweetImages(
             }
 
             else -> {
-                imageUrls.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
+                imageUrls.list.chunked(IMAGE_SPAN_COUNT).forEach { photos ->
                     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                         val maxWidth = maxWidth
                         Row(modifier = Modifier.fillMaxWidth()) {
@@ -756,7 +758,7 @@ private fun TweetImages(
                                             (maxWidth - (AppTheme.dimensions.paddingSpaceBetweenComponentsSmall * photos.size)) / IMAGE_SPAN_COUNT,
                                         ),
                                     photo = photo,
-                                    photos = imageUrls,
+                                    photos = imageUrls.list,
                                     onEvent = onEvent,
                                 )
                             }
@@ -1028,17 +1030,17 @@ fun Preview_MainScreen_GridingTweets() {
                     TweetBean(
                         content = "Content 1",
                         sender = SenderBean(nick = "Sender"),
-                        imagesUrls = listOf("url 1"),
+                        imagesUrls = listOf("url 1").toStable(),
                     ),
                     TweetBean(
                         content = "Content 2",
                         sender = SenderBean(nick = "Sender"),
-                        imagesUrls = listOf("url 1", "url 1", "url 1"),
+                        imagesUrls = listOf("url 1", "url 1", "url 1").toStable(),
                     ),
                     TweetBean(
                         content = "Content 3",
                         sender = SenderBean(nick = "Sender"),
-                        imagesUrls = listOf("url 1", "url 1", "url 1", "url 1"),
+                        imagesUrls = listOf("url 1", "url 1", "url 1", "url 1").toStable(),
                     ),
                     TweetBean(
                         content = "Content 4",
@@ -1046,7 +1048,7 @@ fun Preview_MainScreen_GridingTweets() {
                         imagesUrls = listOf(
                             "url 1", "url 1", "url 1", "url 1", "url 1", "url 1", "url 1", "url 1",
                             "url 1"
-                        ),
+                        ).toStable(),
                     ),
                 )
             ),
@@ -1074,7 +1076,7 @@ fun Preview_MainScreen_CommentedTweet() {
                     TweetBean(
                         content = "Content 1",
                         sender = SenderBean(nick = "Sender"),
-                        imagesUrls = listOf("url 1"),
+                        imagesUrls = listOf("url 1").toStable(),
                         comments = mutableStateListOf(
                             CommentsBean(
                                 content = "Comment 1",

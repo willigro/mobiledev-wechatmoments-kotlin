@@ -125,8 +125,8 @@ class MomentsUseCaseTest {
             .assertSize(size = 1)
             .assertInstance(TweetBean::class.java)
             .assert {
-                it.imagesUrls.assertSize(2)
-                it.imagesUrls?.forEach { url ->
+                it.imagesUrls?.list.assertSize(2)
+                it.imagesUrls?.list?.forEach { url ->
                     assertNotNull(url)
                     assertTrue(url.isNotEmpty())
                 }

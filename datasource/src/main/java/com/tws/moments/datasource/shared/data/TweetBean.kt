@@ -1,5 +1,6 @@
 package com.tws.moments.datasource.shared.data
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -12,7 +13,7 @@ data class TweetBean(
     val id: UUID = UUID.randomUUID(),
     val content: String? = null,
     val sender: SenderBean? = null,
-    val imagesUrls: List<String>? = null,
+    val imagesUrls: StableList<String>? = null,
     val comments: SnapshotStateList<CommentsBean> = mutableStateListOf(),
     val error: String? = null,
     val unknownError: String? = null,
@@ -22,3 +23,10 @@ data class TweetBean(
     fun noErrorAndWithContent() =
         error.isNullOrEmpty() && unknownError.isNullOrEmpty() && content.isNullOrEmpty().not()
 }
+
+@Immutable
+data class StableList<T>(
+    val list: List<T>
+)
+
+fun <T> List<T>.toStable() = StableList(this)

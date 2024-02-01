@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
 import com.tws.moments.datasource.api.entry.TweetBeanApi
 import com.tws.moments.datasource.shared.data.TweetBean
+import com.tws.moments.datasource.shared.data.toStable
 import com.tws.moments.datasource.utils.DateUtils
 
 fun List<TweetBeanApi>?.mapToTweetBean(
@@ -15,7 +16,8 @@ fun List<TweetBeanApi>?.mapToTweetBean(
         imagesUrls = tweet.images?.asSequence()
             ?.map { it.url ?: "" }
             ?.filter { it.isNotEmpty() }
-            ?.toList(),
+            ?.toList()
+            ?.toStable(),
         comments = tweet.comments?.toMutableStateList() ?: mutableStateListOf(),
         error = tweet.error,
         unknownError = tweet.unknownError,

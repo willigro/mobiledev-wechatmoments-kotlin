@@ -13,6 +13,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 
+// TODO: move it to a shared module
 
 fun <T> List<T>?.assertSize(size: Int): List<T> {
     assertEquals(size, this!!.size)

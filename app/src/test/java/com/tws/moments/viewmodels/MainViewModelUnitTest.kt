@@ -17,6 +17,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.Is.`is`
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -333,7 +336,7 @@ class MainViewModelUnitTest {
         loadInitialTweetAndAdvance(
             mainViewModel = mainViewModel,
             momentUseCase = momentUseCase,
-        ) {state ->
+        ) { state ->
             val firstTweet = mainViewModel.uiState.value.tweets!!.first()
             val newComment = "New comment"
 
@@ -369,6 +372,34 @@ class MainViewModelUnitTest {
             )
 
             cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `open image`() = runTest {
+        mainViewModel.uiEvent.test {
+            mainViewModel.onEvent(MainEvent.OpenImage(listOf("not empty url")))
+
+            with(awaitItem()) {
+                assertThat(this!!.size, `is`(1))
+            }
+        }
+    }
+
+    @Test
+    fun `closes image`() = runTest {
+        mainViewModel.uiEvent.test {
+            mainViewModel.onEvent(MainEvent.OpenImage(listOf("not empty url")))
+
+            with(awaitItem()) {
+                assertThat(this!!.size, `is`(1))
+            }
+
+            mainViewModel.onEvent(MainEvent.ClosesImage)
+
+            with(awaitItem()) {
+                assertNull(this)
+            }
         }
     }
 }
