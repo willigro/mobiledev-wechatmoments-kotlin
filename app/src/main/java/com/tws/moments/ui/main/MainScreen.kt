@@ -1,7 +1,6 @@
 package com.tws.moments.ui.main
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -25,7 +24,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,7 +54,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -78,6 +75,8 @@ import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.components.ErrorImageComponent
+import com.tws.moments.designsystem.components.ExpandableText
+import com.tws.moments.designsystem.components.ExpandableTextColumn
 import com.tws.moments.designsystem.components.LoadingImageComponent
 import com.tws.moments.designsystem.components.recomposeHighlighter
 import com.tws.moments.designsystem.theme.AppTheme
@@ -98,7 +97,6 @@ private const val ANIMATION_VISIBILITY_DELAY = 150
 // TODO move these colors to the materials
 //  names aren't represeting the right color, but an aproximation
 val blue = Color(0xFF4152C9)
-val red = Color(0xFFC21149)
 
 @Composable
 fun MainScreenRoot(
@@ -457,36 +455,78 @@ fun CommentTextArea(
 private fun CommentComponent(commentsBean: CommentsBean) {
     val nick = commentsBean.sender?.nick.orEmpty()
 
-    val annotatedString = buildAnnotatedString {
-        withStyle(
-            style = SpanStyle(
-                color = blue, // TODO (rittmann) move to material
-                fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
-            )
-        ) {
-            pushStringAnnotation(nick, annotation = nick)
-            append(nick)
-        }
+    val typography = MaterialTheme.typography
 
-        append(": ${commentsBean.content.orEmpty()}")
+    val annotatedString = remember {
+        buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = blue, // TODO (rittmann) move to material
+                    fontWeight = typography.bodyMedium.fontWeight,
+                    fontSize = typography.bodyMedium.fontSize,
+                    letterSpacing = typography.bodyMedium.letterSpacing,
+                )
+            ) {
+                pushStringAnnotation(nick, annotation = nick)
+                append(nick)
+            }
+
+            append(": ${commentsBean.content.orEmpty()}")
+        }
     }
 
-    ClickableText(
+
+    ExpandableTextColumn(
         modifier = Modifier
             .padding(
                 start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
                 bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
             )
             .recomposeHighlighter(),
-        text = annotatedString,
-    ) { offset ->
-        annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let {
-            // TODO (rittmann) add smt like an animation to react to the click
-            Log.i(TAG, "Clicked")
+        annotatedString = annotatedString,
+        style = MaterialTheme.typography.bodyMedium,
+        showMoreText = stringResource(id = R.string.expandable_text_show_more),
+        showLessText = stringResource(id = R.string.expandable_text_show_less),
+        showMoreStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+    ) { lastCharIndex ->
+        buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = blue, // TODO (rittmann) move to material
+                    fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
+                )
+            ) {
+                pushStringAnnotation(nick, annotation = nick)
+                append(nick)
+            }
+            
+            // Display truncated text and "Show More" button when collapsed.
+            val adjustText =
+                commentsBean.content
+                    .orEmpty()
+                    .substring(startIndex = 0, endIndex = lastCharIndex)
+                    .dropLastWhile { Character.isWhitespace(it) || it == '.' }
+
+            append(": $adjustText")
         }
     }
+
+//    ClickableText(
+//        modifier = Modifier
+//            .padding(
+//                start = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+//                bottom = AppTheme.dimensions.baseTweet.paddingBottomComment,
+//            )
+//            .recomposeHighlighter(),
+//        text = annotatedString,
+//    ) { offset ->
+//        annotatedString.getStringAnnotations(offset, offset).firstOrNull()?.let {
+//            // TODO (rittmann) add smt like an animation to react to the click
+//            Log.i(TAG, "Clicked")
+//        }
+//    }
 }
 
 @Composable
@@ -501,14 +541,14 @@ fun ContentAndImagesArea(
             )
             .recomposeHighlighter(),
     ) {
-        Text(
-            text = tweetBean.content.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 5,
-            overflow = TextOverflow.Ellipsis,
+        ExpandableText(
             modifier = Modifier.padding(
                 bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall
-            )
+            ),
+            text = tweetBean.content.orEmpty(),
+            style = MaterialTheme.typography.bodyMedium,
+            showMoreText = stringResource(id = R.string.expandable_text_show_more_ellipsis),
+            showLessText = stringResource(id = R.string.expandable_text_show_less),
         )
 
         TweetImages(imageUrls = tweetBean.imagesUrls)

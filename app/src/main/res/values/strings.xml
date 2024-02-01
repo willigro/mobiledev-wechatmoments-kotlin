@@ -2,4 +2,7 @@
     <string name="app_name">TheWeChatMoments</string>
 
     <string name="message_tweets_has_not_been_found">Tweets has not been found</string>
+    <string name="expandable_text_show_more_ellipsis">…show more</string>
+    <string name="expandable_text_show_more">show more</string>
+    <string name="expandable_text_show_less">show less</string>
 </resources>
