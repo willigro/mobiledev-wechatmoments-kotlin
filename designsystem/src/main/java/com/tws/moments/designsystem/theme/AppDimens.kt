@@ -40,6 +40,7 @@ data class BaseTweet(
     val singleImageWidth: Dp = 100.dp,
     val singleImageHeight: Dp = 150.dp,
     val gridImageSize: Dp = 94.dp,
+    val selectedImagePadding: Dp = 40.dp,
 )
 
 internal val LocalDimensions = staticCompositionLocalOf { AppDimensions() }

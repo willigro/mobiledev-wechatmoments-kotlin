@@ -11,4 +11,7 @@ sealed interface MainEvent {
         val tweetBean: TweetBean,
         val comment: String,
     ) : MainEvent
+
+    data class OpenImage(val url: List<String>?) : MainEvent
+    data object ClosesImage : MainEvent
 }

@@ -6,12 +6,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +26,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
@@ -43,8 +48,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -73,6 +80,7 @@ import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.shared.data.TweetBean
+import com.tws.moments.designsystem.components.CollectSharedState
 import com.tws.moments.designsystem.components.DivisorHorizontal
 import com.tws.moments.designsystem.components.ErrorImageComponent
 import com.tws.moments.designsystem.components.ExpandableText
@@ -83,7 +91,10 @@ import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import com.tws.moments.designsystem.theme.appTextFieldColors
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 private const val TAG = "MainScreen##"
 private const val IMAGE_SPAN_COUNT = 3
@@ -103,6 +114,7 @@ fun MainScreenRoot(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    val uiEvent = viewModel.uiEvent
 
     LaunchedEffect(Unit) {
         viewModel.onEvent(
@@ -118,6 +130,7 @@ fun MainScreenRoot(
 
     MainScreen(
         uiState = uiState,
+        uiEvent = uiEvent,
         onEvent = viewModel::onEvent,
     )
 }
@@ -125,6 +138,7 @@ fun MainScreenRoot(
 @Composable
 private fun MainScreen(
     uiState: MainUiState,
+    uiEvent: SharedFlow<List<String>?>,
     onEvent: (MainEvent) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -159,6 +173,93 @@ private fun MainScreen(
             toolbarHeight = toolbarHeight,
             onEvent = onEvent,
         )
+    }
+
+    SelectedImageComponent(
+        uiEvent = uiEvent,
+        onEvent = onEvent,
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun SelectedImageComponent(
+    uiEvent: SharedFlow<List<String>?>,
+    onEvent: (MainEvent) -> Unit,
+) {
+    val images = remember {
+        mutableStateOf<List<String>?>(null)
+    }
+
+    if (images.value.isNullOrEmpty().not()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .5f)
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (images.value?.size == 1) {
+                SubcomposeAsyncImage(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onEvent(
+                                MainEvent.ClosesImage
+                            )
+                        }
+                        .padding(AppTheme.dimensions.baseTweet.selectedImagePadding)
+                        .recomposeHighlighter(),
+                    model = images.value?.first(),
+                    contentDescription = stringResource(R.string.content_description_sender_avatar_image),
+                )
+            } else {
+                val pagerState = rememberPagerState { images.value?.size ?:0 }
+
+                HorizontalPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(horizontal = 65.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onEvent(
+                                MainEvent.ClosesImage
+                            )
+                        }
+                        .recomposeHighlighter(),
+                ) { page ->
+
+                    val pageOffset =
+                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+
+                    val scaleFactor = 0.75f + (1f - 0.75f) * (1f - pageOffset.absoluteValue)
+
+                    SubcomposeAsyncImage(
+                        modifier = Modifier
+                            .graphicsLayer {
+                                scaleX = scaleFactor
+                                scaleY = scaleFactor
+                            }
+                            .alpha(
+                                scaleFactor.coerceIn(0f, 1f)
+                            )
+                            .clickable {
+                                onEvent(
+                                    MainEvent.ClosesImage
+                                )
+                            }
+                            .recomposeHighlighter(),
+                        model = images.value?.get(page),
+                        contentDescription = stringResource(R.string.content_description_sender_avatar_image),
+                    )
+                }
+            }
+        }
+    }
+
+    CollectSharedState(sharedFlow = uiEvent) { url ->
+        images.value = url
     }
 }
 
@@ -291,7 +392,13 @@ private fun MomentItemComponent(
                         top.linkTo(parent.top)
                         start.linkTo(parent.start)
                     }
-                    .size(AppTheme.dimensions.baseTweet.avatarSize),
+                    .size(AppTheme.dimensions.baseTweet.avatarSize)
+                    .clickable {
+                        onEvent(
+                            MainEvent.OpenImage(listOf(tweetBean.sender?.avatar.orEmpty()))
+                        )
+                    }
+                    .recomposeHighlighter(),
                 model = tweetBean.sender?.avatar,
                 loading = {
                     LoadingImageComponent()
@@ -322,6 +429,7 @@ private fun MomentItemComponent(
                         width = Dimension.fillToConstraints
                     },
                 tweetBean = tweetBean,
+                onEvent = onEvent,
             )
 
             CommentsArea(
@@ -501,7 +609,7 @@ private fun CommentComponent(commentsBean: CommentsBean) {
                 pushStringAnnotation(nick, annotation = nick)
                 append(nick)
             }
-            
+
             // Display truncated text and "Show More" button when collapsed.
             val adjustText =
                 commentsBean.content
@@ -533,6 +641,7 @@ private fun CommentComponent(commentsBean: CommentsBean) {
 fun ContentAndImagesArea(
     modifier: Modifier,
     tweetBean: TweetBean,
+    onEvent: (MainEvent) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -551,7 +660,10 @@ fun ContentAndImagesArea(
             showLessText = stringResource(id = R.string.expandable_text_show_less),
         )
 
-        TweetImages(imageUrls = tweetBean.imagesUrls)
+        TweetImages(
+            imageUrls = tweetBean.imagesUrls,
+            onEvent = onEvent,
+        )
 
         Text(
             modifier = Modifier.padding(
@@ -565,7 +677,10 @@ fun ContentAndImagesArea(
 }
 
 @Composable
-private fun TweetImages(imageUrls: List<String>?) {
+private fun TweetImages(
+    imageUrls: List<String>?,
+    onEvent: (MainEvent) -> Unit,
+) {
     // TODO it needs to be filtered from the VM or UseCase
     imageUrls?.also {
         when (imageUrls.size) {
@@ -580,7 +695,12 @@ private fun TweetImages(imageUrls: List<String>?) {
                         )
                         .padding(
                             bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                        ),
+                        )
+                        .clickable {
+                            onEvent(
+                                MainEvent.OpenImage(listOf(imageUrls[0]))
+                            )
+                        },
                     contentScale = ContentScale.Crop,
                     model = imageUrls[0],
                     loading = {
@@ -608,6 +728,8 @@ private fun TweetImages(imageUrls: List<String>?) {
                                         AppTheme.dimensions.baseTweet.gridImageSize,
                                     ),
                                 photo = photo,
+                                photos = imageUrls,
+                                onEvent = onEvent,
                             )
                         }
                     }
@@ -634,6 +756,8 @@ private fun TweetImages(imageUrls: List<String>?) {
                                             (maxWidth - (AppTheme.dimensions.paddingSpaceBetweenComponentsSmall * photos.size)) / IMAGE_SPAN_COUNT,
                                         ),
                                     photo = photo,
+                                    photos = imageUrls,
+                                    onEvent = onEvent,
                                 )
                             }
                         }
@@ -645,9 +769,20 @@ private fun TweetImages(imageUrls: List<String>?) {
 }
 
 @Composable
-private fun GridImageComponent(modifier: Modifier, photo: String) {
+private fun GridImageComponent(
+    modifier: Modifier,
+    photo: String,
+    photos: List<String>,
+    onEvent: (MainEvent) -> Unit
+) {
     SubcomposeAsyncImage(
-        modifier = modifier.recomposeHighlighter(),
+        modifier = modifier
+            .recomposeHighlighter()
+            .clickable {
+                onEvent(
+                    MainEvent.OpenImage(photos)
+                )
+            },
         contentScale = ContentScale.Crop,
         model = photo,
         loading = {
@@ -868,7 +1003,8 @@ fun Preview_MainScreen_List_NotFound() {
         MainScreen(
             uiState = MainUiState(
                 hasErrorOnTweets = true,
-            )
+            ),
+            uiEvent = MutableSharedFlow(),
         ) {
 
         }
@@ -913,7 +1049,8 @@ fun Preview_MainScreen_GridingTweets() {
                         ),
                     ),
                 )
-            )
+            ),
+            uiEvent = MutableSharedFlow(),
         ) {
 
         }
@@ -954,7 +1091,8 @@ fun Preview_MainScreen_CommentedTweet() {
                         )
                     ),
                 )
-            )
+            ),
+            uiEvent = MutableSharedFlow(),
         ) {
 
         }

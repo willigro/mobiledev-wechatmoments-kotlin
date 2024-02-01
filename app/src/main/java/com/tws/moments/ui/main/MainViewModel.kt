@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -20,6 +22,10 @@ private const val INITIAL_PAGE_INDEX = 1
 class MainViewModel @Inject constructor(
     private val useCase: MomentsUseCase,
 ) : ViewModel() {
+
+    private val _uiEvent: MutableSharedFlow<List<String>?> = MutableSharedFlow()
+    val uiEvent: SharedFlow<List<String>?>
+        get() = _uiEvent
 
     private val _uiState: MutableStateFlow<MainUiState> = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState>
@@ -48,6 +54,18 @@ class MainViewModel @Inject constructor(
             is MainEvent.ShareNewComment -> {
                 shareNewComment(event.tweetBean, event.comment)
             }
+
+            is MainEvent.OpenImage -> {
+                viewModelScope.launch {
+                    _uiEvent.emit(event.url)
+                }
+            }
+
+            MainEvent.ClosesImage -> {
+                viewModelScope.launch {
+                    _uiEvent.emit(null)
+                }
+            }
         }
     }
 
@@ -72,7 +90,10 @@ class MainViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(
                             tweets = state.tweets?.apply {
-                                set(indexOfTweet, state.tweets[indexOfTweet].copy(isSendingComment = false))
+                                set(
+                                    indexOfTweet,
+                                    state.tweets[indexOfTweet].copy(isSendingComment = false)
+                                )
                             }
                         )
                     }
