@@ -8,7 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.tws.moments.designsystem.components.NavigationWrapper
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
-import com.tws.moments.ui.navigation.MainNavigation
+import com.tws.moments.ui.navigation.ScreensNavigation
+import com.tws.moments.ui.navigation.createGraph
 import com.tws.moments.ui.navigation.mainGraph
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,9 +28,11 @@ class MainActivity : ComponentActivity() {
             TwsMomentsTheme {
                 NavHost(
                     navController = navController,
-                    startDestination = MainNavigation.Main.route,
+                    startDestination = ScreensNavigation.Main.route,
                 ) {
                     mainGraph(navigationWrapper = navigationWrapper)
+
+                    createGraph(navigationWrapper = navigationWrapper)
                 }
             }
         }

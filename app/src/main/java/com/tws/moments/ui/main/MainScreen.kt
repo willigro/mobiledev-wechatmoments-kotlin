@@ -93,7 +93,7 @@ import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import com.tws.moments.designsystem.theme.appTextFieldColors
-import com.tws.moments.ui.navigation.MainNavigation
+import com.tws.moments.ui.navigation.ScreensNavigation
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
@@ -942,7 +942,7 @@ private fun ToolbarComponent(
                 },
                 onClick = {
                     navigationWrapper.navigate(
-                        path = MainNavigation.Create.destination,
+                        path = ScreensNavigation.CreateTweet.TakeSinglePicture.destination,
                     )
                 }
             ) {
