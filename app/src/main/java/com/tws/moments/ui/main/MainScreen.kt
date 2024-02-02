@@ -38,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -88,11 +87,13 @@ import com.tws.moments.designsystem.components.ErrorImageComponent
 import com.tws.moments.designsystem.components.ExpandableText
 import com.tws.moments.designsystem.components.ExpandableTextColumn
 import com.tws.moments.designsystem.components.LoadingImageComponent
+import com.tws.moments.designsystem.components.NavigationWrapper
 import com.tws.moments.designsystem.components.recomposeHighlighter
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import com.tws.moments.designsystem.theme.appTextFieldColors
+import com.tws.moments.ui.navigation.MainNavigation
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
@@ -113,26 +114,16 @@ val blue = Color(0xFF4152C9)
 
 @Composable
 fun MainScreenRoot(
+    navigationWrapper: NavigationWrapper,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val uiEvent = viewModel.uiEvent
 
-    LaunchedEffect(Unit) {
-        viewModel.onEvent(
-            MainEvent.FetchUserBean
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.onEvent(
-            MainEvent.FetchTweets
-        )
-    }
-
     MainScreen(
         uiState = uiState,
         uiEvent = uiEvent,
+        navigationWrapper = navigationWrapper,
         onEvent = viewModel::onEvent,
     )
 }
@@ -141,6 +132,7 @@ fun MainScreenRoot(
 private fun MainScreen(
     uiState: MainUiState,
     uiEvent: SharedFlow<List<String>?>,
+    navigationWrapper: NavigationWrapper,
     onEvent: (MainEvent) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -169,6 +161,7 @@ private fun MainScreen(
         },
     ) {
         MainScreenListingComponent(
+            navigationWrapper = navigationWrapper,
             lazyListState = lazyListState,
             directionalLazyListState = directionalLazyListState,
             uiState = uiState,
@@ -217,7 +210,7 @@ private fun SelectedImageComponent(
                     contentDescription = stringResource(R.string.content_description_sender_avatar_image),
                 )
             } else {
-                val pagerState = rememberPagerState { images.value?.size ?:0 }
+                val pagerState = rememberPagerState { images.value?.size ?: 0 }
 
                 HorizontalPager(
                     state = pagerState,
@@ -267,6 +260,7 @@ private fun SelectedImageComponent(
 
 @Composable
 private fun MainScreenListingComponent(
+    navigationWrapper: NavigationWrapper,
     lazyListState: LazyListState,
     directionalLazyListState: DirectionalLazyListState,
     uiState: MainUiState,
@@ -328,6 +322,7 @@ private fun MainScreenListingComponent(
         }
 
         ToolbarComponent(
+            navigationWrapper = navigationWrapper,
             directionalLazyListState = directionalLazyListState,
             toolbarHeight = toolbarHeight,
         )
@@ -890,6 +885,7 @@ private fun MomentHeaderComponent(
 
 @Composable
 private fun ToolbarComponent(
+    navigationWrapper: NavigationWrapper,
     directionalLazyListState: DirectionalLazyListState,
     toolbarHeight: MutableState<Dp>,
     modifier: Modifier = Modifier,
@@ -944,7 +940,11 @@ private fun ToolbarComponent(
                     bottom.linkTo(title.bottom)
                     end.linkTo(parent.end)
                 },
-                onClick = { /*TODO*/ }
+                onClick = {
+                    navigationWrapper.navigate(
+                        path = MainNavigation.Create.destination,
+                    )
+                }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_camera_alt_24),
@@ -1007,6 +1007,7 @@ fun Preview_MainScreen_List_NotFound() {
                 hasErrorOnTweets = true,
             ),
             uiEvent = MutableSharedFlow(),
+            navigationWrapper = NavigationWrapper(null),
         ) {
 
         }
@@ -1053,6 +1054,7 @@ fun Preview_MainScreen_GridingTweets() {
                 )
             ),
             uiEvent = MutableSharedFlow(),
+            navigationWrapper = NavigationWrapper(null),
         ) {
 
         }
@@ -1095,6 +1097,7 @@ fun Preview_MainScreen_CommentedTweet() {
                 )
             ),
             uiEvent = MutableSharedFlow(),
+            navigationWrapper = NavigationWrapper(null),
         ) {
 
         }

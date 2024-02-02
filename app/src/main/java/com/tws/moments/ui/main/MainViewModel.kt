@@ -1,5 +1,6 @@
 package com.tws.moments.ui.main
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
@@ -33,7 +34,18 @@ class MainViewModel @Inject constructor(
 
     private var reqPageIndex = INITIAL_PAGE_INDEX
 
+    init {
+       onEvent(
+            MainEvent.FetchUserBean
+        )
+
+        onEvent(
+            MainEvent.FetchTweets
+        )
+    }
+
     fun onEvent(event: MainEvent) {
+        Log.i("MainViewModel", event.toString())
         when (event) {
             MainEvent.FetchTweets -> {
                 loadTweets()
