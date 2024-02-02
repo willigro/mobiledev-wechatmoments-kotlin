@@ -2,6 +2,8 @@
 plugins {
     id("com.tws.moments.library")
     id("com.tws.moments.android-compose")
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -10,4 +12,10 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+
+    // TODO (rittmann) create a plugin for it
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }

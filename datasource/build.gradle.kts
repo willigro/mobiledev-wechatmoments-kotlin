@@ -3,6 +3,7 @@ plugins {
     id("com.tws.moments.library")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
+    id("com.tws.moments.android-compose")
 }
 
 android {
@@ -15,8 +16,6 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     kapt(libs.hilt.compiler)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.bundles.compose)
 
     implementation(libs.gson)
 
