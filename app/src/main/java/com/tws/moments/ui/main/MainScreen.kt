@@ -1,6 +1,10 @@
 package com.tws.moments.ui.main
 
+import android.Manifest
 import android.annotation.SuppressLint
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -53,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -93,6 +98,8 @@ import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
 import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import com.tws.moments.designsystem.theme.appTextFieldColors
+import com.tws.moments.designsystem.utils.registerLauncherSettings
+import com.tws.moments.designsystem.utils.retrieveSettingsIntent
 import com.tws.moments.ui.navigation.ScreensNavigation
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -890,6 +897,38 @@ private fun ToolbarComponent(
     toolbarHeight: MutableState<Dp>,
     modifier: Modifier = Modifier,
 ) {
+    val componentActivity = (LocalContext.current as ComponentActivity)
+
+    var shouldLaunchSettings = remember {
+        false
+    }
+
+    val settingsLauncher = registerLauncherSettings(
+        permissions = mutableListOf(Manifest.permission.CAMERA),
+        componentActivity = componentActivity,
+    ) {
+        navigationWrapper.navigate(
+            path = ScreensNavigation.CreateTweet.TakeSinglePicture.destination,
+        )
+    }
+
+    val activityResultLauncherCameraPermission =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                navigationWrapper.navigate(
+                    path = ScreensNavigation.CreateTweet.TakeSinglePicture.destination,
+                )
+            } else {
+                if (componentActivity.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+                        .not()
+                ) {
+                    shouldLaunchSettings = true
+                }
+            }
+        }
+
     val density = LocalDensity.current
 
     AnimatedVisibility(
@@ -941,9 +980,15 @@ private fun ToolbarComponent(
                     end.linkTo(parent.end)
                 },
                 onClick = {
-                    navigationWrapper.navigate(
-                        path = ScreensNavigation.CreateTweet.TakeSinglePicture.destination,
-                    )
+                    if (shouldLaunchSettings) {
+                        settingsLauncher.launch(
+                            componentActivity.retrieveSettingsIntent()
+                        )
+                    } else {
+                        activityResultLauncherCameraPermission.launch(
+                            Manifest.permission.CAMERA
+                        )
+                    }
                 }
             ) {
                 Icon(

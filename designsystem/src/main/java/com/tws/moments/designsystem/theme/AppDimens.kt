@@ -28,6 +28,7 @@ data class AppDimensions(
     val progressSizeSmall: Dp = 20.dp,
 
     val baseTweet: BaseTweet = BaseTweet(),
+    val takePicture: TakePicture = TakePicture(),
 )
 
 data class BaseTweet(
@@ -42,5 +43,11 @@ data class BaseTweet(
     val gridImageSize: Dp = 94.dp,
     val selectedImagePadding: Dp = 40.dp,
 )
+
+data class TakePicture(
+    val takePictureButtonSize: Dp = 80.dp,
+    val takePictureButtonBottomPadding: Dp = 20.dp,
+)
+
 
 internal val LocalDimensions = staticCompositionLocalOf { AppDimensions() }
