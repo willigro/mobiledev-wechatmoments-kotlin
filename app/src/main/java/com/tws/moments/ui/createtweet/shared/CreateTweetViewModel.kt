@@ -1,4 +1,4 @@
-package com.tws.moments.ui.createtweet
+package com.tws.moments.ui.createtweet.shared
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

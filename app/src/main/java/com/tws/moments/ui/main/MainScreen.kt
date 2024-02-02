@@ -207,7 +207,7 @@ private fun SelectedImageComponent(
                         .padding(AppTheme.dimensions.baseTweet.selectedImagePadding)
                         .recomposeHighlighter(),
                     model = images.value?.first(),
-                    contentDescription = stringResource(R.string.content_description_sender_avatar_image),
+                    contentDescription = stringResource(R.string.content_description_post_image),
                 )
             } else {
                 val pagerState = rememberPagerState { images.value?.size ?: 0 }
@@ -246,7 +246,7 @@ private fun SelectedImageComponent(
                             }
                             .recomposeHighlighter(),
                         model = images.value?.get(page),
-                        contentDescription = stringResource(R.string.content_description_sender_avatar_image),
+                        contentDescription = stringResource(R.string.content_description_post_images),
                     )
                 }
             }

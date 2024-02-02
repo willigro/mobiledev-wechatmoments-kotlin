@@ -7,4 +7,7 @@
     <string name="content_description_take_pictures">Take pictures</string>
     <string name="content_description_type_comment">Create a comment</string>
     <string name="content_description_send_comment">Send the comment</string>
+    <string name="content_description_toolbar_arrow_back">Go back</string>
+    <string name="content_description_post_image">Post image</string>
+    <string name="content_description_post_images">Post images</string>
 </resources>
