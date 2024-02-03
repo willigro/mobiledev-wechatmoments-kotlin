@@ -92,7 +92,6 @@ import com.tws.moments.designsystem.components.ErrorImageComponent
 import com.tws.moments.designsystem.components.ExpandableText
 import com.tws.moments.designsystem.components.ExpandableTextColumn
 import com.tws.moments.designsystem.components.LoadingImageComponent
-import com.tws.moments.designsystem.components.NavigationWrapper
 import com.tws.moments.designsystem.components.recomposeHighlighter
 import com.tws.moments.designsystem.theme.AppTheme
 import com.tws.moments.designsystem.theme.RoundedCornerShapeSmall
@@ -100,7 +99,6 @@ import com.tws.moments.designsystem.theme.TwsMomentsTheme
 import com.tws.moments.designsystem.theme.appTextFieldColors
 import com.tws.moments.designsystem.utils.registerLauncherSettings
 import com.tws.moments.designsystem.utils.retrieveSettingsIntent
-import com.tws.moments.ui.navigation.ScreensNavigation
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
@@ -121,8 +119,7 @@ val blue = Color(0xFF4152C9)
 
 @Composable
 fun MainScreenRoot(
-    navigationWrapper: NavigationWrapper,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModelCreateTweet = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val uiEvent = viewModel.uiEvent
@@ -130,8 +127,8 @@ fun MainScreenRoot(
     MainScreen(
         uiState = uiState,
         uiEvent = uiEvent,
-        navigationWrapper = navigationWrapper,
         onEvent = viewModel::onEvent,
+        onNavigationEvent = viewModel::onNavigationEvent,
     )
 }
 
@@ -139,8 +136,8 @@ fun MainScreenRoot(
 private fun MainScreen(
     uiState: MainUiState,
     uiEvent: SharedFlow<List<String>?>,
-    navigationWrapper: NavigationWrapper,
     onEvent: (MainEvent) -> Unit,
+    onNavigationEvent: (MainNavigationEvent) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val swipeRefreshState = rememberSwipeRefreshState(uiState.isRefreshing)
@@ -168,12 +165,12 @@ private fun MainScreen(
         },
     ) {
         MainScreenListingComponent(
-            navigationWrapper = navigationWrapper,
             lazyListState = lazyListState,
             directionalLazyListState = directionalLazyListState,
             uiState = uiState,
             toolbarHeight = toolbarHeight,
             onEvent = onEvent,
+            onNavigationEvent = onNavigationEvent,
         )
     }
 
@@ -267,12 +264,12 @@ private fun SelectedImageComponent(
 
 @Composable
 private fun MainScreenListingComponent(
-    navigationWrapper: NavigationWrapper,
     lazyListState: LazyListState,
     directionalLazyListState: DirectionalLazyListState,
     uiState: MainUiState,
     toolbarHeight: MutableState<Dp>,
     onEvent: (MainEvent) -> Unit,
+    onNavigationEvent: (MainNavigationEvent) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -329,9 +326,9 @@ private fun MainScreenListingComponent(
         }
 
         ToolbarComponent(
-            navigationWrapper = navigationWrapper,
             directionalLazyListState = directionalLazyListState,
             toolbarHeight = toolbarHeight,
+            onNavigationEvent = onNavigationEvent,
         )
     }
 }
@@ -892,10 +889,10 @@ private fun MomentHeaderComponent(
 
 @Composable
 private fun ToolbarComponent(
-    navigationWrapper: NavigationWrapper,
     directionalLazyListState: DirectionalLazyListState,
     toolbarHeight: MutableState<Dp>,
     modifier: Modifier = Modifier,
+    onNavigationEvent: (MainNavigationEvent) -> Unit,
 ) {
     val componentActivity = (LocalContext.current as ComponentActivity)
 
@@ -907,9 +904,7 @@ private fun ToolbarComponent(
         permissions = mutableListOf(Manifest.permission.CAMERA),
         componentActivity = componentActivity,
     ) {
-        navigationWrapper.navigate(
-            path = ScreensNavigation.CreateTweet.TakeSinglePicture.destination,
-        )
+        onNavigationEvent(MainNavigationEvent.OpenCreateTweet)
     }
 
     val activityResultLauncherCameraPermission =
@@ -917,9 +912,7 @@ private fun ToolbarComponent(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             if (isGranted) {
-                navigationWrapper.navigate(
-                    path = ScreensNavigation.CreateTweet.TakeSinglePicture.destination,
-                )
+                onNavigationEvent(MainNavigationEvent.OpenCreateTweet)
             } else {
                 if (componentActivity.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
                         .not()
@@ -1052,7 +1045,7 @@ fun Preview_MainScreen_List_NotFound() {
                 hasErrorOnTweets = true,
             ),
             uiEvent = MutableSharedFlow(),
-            navigationWrapper = NavigationWrapper(null),
+            onEvent = {},
         ) {
 
         }
@@ -1099,7 +1092,7 @@ fun Preview_MainScreen_GridingTweets() {
                 )
             ),
             uiEvent = MutableSharedFlow(),
-            navigationWrapper = NavigationWrapper(null),
+            onEvent = {},
         ) {
 
         }
@@ -1142,7 +1135,7 @@ fun Preview_MainScreen_CommentedTweet() {
                 )
             ),
             uiEvent = MutableSharedFlow(),
-            navigationWrapper = NavigationWrapper(null),
+            onEvent = {},
         ) {
 
         }

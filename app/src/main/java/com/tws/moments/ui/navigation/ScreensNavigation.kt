@@ -5,5 +5,6 @@ sealed class ScreensNavigation(val destination: String, val route: String = "") 
     sealed class CreateTweet : ScreensNavigation("create_route", "create_route_graph") {
         data object TakeSinglePicture : CreateTweet()
         data object SaveTweet : ScreensNavigation("save")
+        data object ShowPictureTweet : ScreensNavigation("show")
     }
 }

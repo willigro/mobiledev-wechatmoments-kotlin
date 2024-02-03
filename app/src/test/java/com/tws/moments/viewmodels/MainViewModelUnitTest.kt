@@ -5,7 +5,7 @@ import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
 import com.tws.moments.ui.main.MainEvent
-import com.tws.moments.ui.main.MainViewModel
+import com.tws.moments.ui.main.MainViewModelCreateTweet
 import com.tws.moments.utils.MainDispatcherRule
 import com.tws.moments.utils.mockCommentBean
 import com.tws.moments.utils.mockTweetBean
@@ -37,12 +37,12 @@ class MainViewModelUnitTest {
     var rule: TestRule = MainDispatcherRule()
 
     private lateinit var momentUseCase: MomentsUseCase
-    private lateinit var mainViewModel: MainViewModel
+    private lateinit var mainViewModel: MainViewModelCreateTweet
 
     @Before
     fun setUp() {
         momentUseCase = mockk<MomentsUseCase>()
-        mainViewModel = MainViewModel(momentUseCase)
+        mainViewModel = MainViewModelCreateTweet(momentUseCase)
     }
 
     @Test

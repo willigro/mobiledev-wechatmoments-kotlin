@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.MomentsUseCase
+import com.tws.moments.ui.navigation.AppNavigator
+import com.tws.moments.ui.navigation.ScreensNavigation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +22,8 @@ import javax.inject.Inject
 private const val INITIAL_PAGE_INDEX = 1
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class MainViewModelCreateTweet @Inject constructor(
+    private val appNavigator: AppNavigator,
     private val useCase: MomentsUseCase,
 ) : ViewModel() {
 
@@ -35,7 +38,7 @@ class MainViewModel @Inject constructor(
     private var reqPageIndex = INITIAL_PAGE_INDEX
 
     init {
-       onEvent(
+        onEvent(
             MainEvent.FetchUserBean
         )
 
@@ -76,6 +79,16 @@ class MainViewModel @Inject constructor(
             MainEvent.ClosesImage -> {
                 viewModelScope.launch {
                     _uiEvent.emit(null)
+                }
+            }
+        }
+    }
+
+    fun onNavigationEvent(event: MainNavigationEvent) {
+        when (event) {
+            MainNavigationEvent.OpenCreateTweet -> {
+                viewModelScope.launch {
+                    appNavigator.navigateTo(ScreensNavigation.CreateTweet.TakeSinglePicture.destination)
                 }
             }
         }

@@ -7,6 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.tws.moments.core.file.BitmapExif
 import com.tws.moments.core.file.FileResolver
 import com.tws.moments.core.file.utils.toBitmapExif
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetNavigationEvent
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiState
+import com.tws.moments.ui.navigation.AppNavigator
+import com.tws.moments.ui.navigation.ScreensNavigation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,12 +23,39 @@ import javax.inject.Inject
 @ExperimentalGetImage
 @HiltViewModel
 class CreateTweetViewModel @Inject constructor(
+    private val appNavigator: AppNavigator,
     private val fileResolver: FileResolver,
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<BitmapExif?> = MutableStateFlow(null)
-    val uiState: StateFlow<BitmapExif?>
+    private val _uiState: MutableStateFlow<CreateTweetUiState> = MutableStateFlow(
+        CreateTweetUiState()
+    )
+    val uiState: StateFlow<CreateTweetUiState>
         get() = _uiState
+
+    fun onNavigationEvent(event: CreateTweetNavigationEvent) = viewModelScope.launch {
+        when (event) {
+            CreateTweetNavigationEvent.Back -> {
+                appNavigator.navigateBack()
+            }
+
+            CreateTweetNavigationEvent.ShowPicture -> {
+                appNavigator.navigateTo(ScreensNavigation.CreateTweet.ShowPictureTweet.destination)
+            }
+
+            CreateTweetNavigationEvent.TakePicture -> {
+                _uiState.update {
+                    it.copy(bitmapExif = null)
+                }
+
+                appNavigator.navigateBack(ScreensNavigation.CreateTweet.TakeSinglePicture.destination)
+            }
+
+            CreateTweetNavigationEvent.SavePicture -> {
+                appNavigator.navigateTo(ScreensNavigation.CreateTweet.SaveTweet.destination)
+            }
+        }
+    }
 
     fun takePicture(imageCapture: ImageCapture) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
@@ -32,7 +63,9 @@ class CreateTweetViewModel @Inject constructor(
                 imageCapture = imageCapture,
                 onImageCaptured = { imageProxy ->
                     _uiState.update {
-                        imageProxy.image?.toBitmapExif()
+                        it.copy(
+                            bitmapExif = imageProxy.image?.toBitmapExif(),
+                        )
                     }
                 },
                 onError = {

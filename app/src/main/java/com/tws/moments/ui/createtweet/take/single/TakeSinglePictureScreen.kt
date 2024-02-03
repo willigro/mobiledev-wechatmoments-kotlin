@@ -9,7 +9,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -25,22 +24,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.tws.moments.core.file.BitmapExif
-import com.tws.moments.designsystem.components.NavigationWrapper
 import com.tws.moments.designsystem.theme.AppTheme
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetNavigationEvent
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiState
 import com.tws.moments.ui.createtweet.shared.CreateTweetViewModel
 import com.tws.moments.ui.createtweet.shared.ui.CreateTweetToolbar
-import com.tws.moments.ui.navigation.ScreensNavigation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -57,43 +53,41 @@ import kotlin.coroutines.suspendCoroutine
 @OptIn(ExperimentalGetImage::class)
 @Composable
 fun TakeSinglePictureScreenRoot(
-    navigationWrapper: NavigationWrapper,
     viewModel: CreateTweetViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
 
     TakeSinglePictureScreen(
         uiState = uiState,
-        navigationWrapper = navigationWrapper,
-        takePicture = viewModel::takePicture
+        takePicture = viewModel::takePicture,
+        onNavigationEvent = viewModel::onNavigationEvent,
     )
 }
 
 @Composable
 fun TakeSinglePictureScreen(
-    uiState: BitmapExif?,
-    navigationWrapper: NavigationWrapper,
+    uiState: CreateTweetUiState,
     takePicture: (ImageCapture) -> Unit,
+    onNavigationEvent: (CreateTweetNavigationEvent) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        CreateTweetToolbar(modifier = Modifier, navigationWrapper = navigationWrapper)
+        CreateTweetToolbar(modifier = Modifier) {
+            onNavigationEvent(CreateTweetNavigationEvent.Back)
+        }
 
         Text(
             text = "Next",
-            modifier = Modifier.clickable { navigationWrapper.navigate(ScreensNavigation.CreateTweet.SaveTweet.destination) }
+            modifier = Modifier.clickable {
+                onNavigationEvent(CreateTweetNavigationEvent.SavePicture)
+            }
         )
 
-        if (uiState?.bitmap == null) {
+        if (uiState.bitmapExif?.bitmap == null) {
             CameraView(
                 takePicture = takePicture,
             )
         } else {
-            Image(
-                bitmap = uiState.bitmap!!.asImageBitmap(),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
-            )
+            onNavigationEvent(CreateTweetNavigationEvent.ShowPicture)
         }
     }
 }

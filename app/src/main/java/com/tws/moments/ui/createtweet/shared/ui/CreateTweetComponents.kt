@@ -1,5 +1,6 @@
 package com.tws.moments.ui.createtweet.shared.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,11 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.tws.moments.R
-import com.tws.moments.designsystem.components.NavigationWrapper
 import com.tws.moments.designsystem.theme.AppTheme
 
 @Composable
-fun CreateTweetToolbar(modifier: Modifier, navigationWrapper: NavigationWrapper) {
+fun CreateTweetToolbar(
+    modifier: Modifier,
+    onBack: () -> Unit,
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -27,9 +30,7 @@ fun CreateTweetToolbar(modifier: Modifier, navigationWrapper: NavigationWrapper)
         horizontalArrangement = Arrangement.Start,
     ) {
         IconButton(
-            onClick = {
-                navigationWrapper.pop()
-            }
+            onClick = onBack
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -37,6 +38,9 @@ fun CreateTweetToolbar(modifier: Modifier, navigationWrapper: NavigationWrapper)
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
 
+    BackHandler {
+        onBack()
     }
 }
