@@ -5,7 +5,8 @@ import app.cash.turbine.test
 import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.ui.main.MainEvent
 import com.tws.moments.ui.main.MainUiState
-import com.tws.moments.ui.main.MainViewModelCreateTweet
+import com.tws.moments.ui.main.MainViewModel
+import com.tws.moments.ui.navigation.AppNavigator
 import com.tws.moments.utils.mockTweetBean
 import io.mockk.coEvery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -88,30 +89,32 @@ internal fun MainUiState.assertNewCommentDone(index: Int) {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal suspend fun TestScope.loadInitialTweetAndAdvance(
-    mainViewModel: MainViewModelCreateTweet,
+    appNavigator: AppNavigator,
     momentUseCase: MomentsUseCase,
-    validate: suspend TurbineTestContext<MainUiState>.(MainUiState) -> Unit,
-) {
+    validate: suspend TurbineTestContext<MainUiState>.(MainUiState, MainViewModel) -> Unit,
+): MainViewModel {
+    val initialTweets = arrayListOf(
+        mockTweetBean("initial tweet")
+    )
+
+    coEvery {
+        momentUseCase.fetchTweets()
+    } returns initialTweets
+
+    val mainViewModel = MainViewModel(appNavigator, momentUseCase)
+
     mainViewModel.uiState.test {
-        val initialTweets = arrayListOf(
-            mockTweetBean("initial tweet")
-        )
-
-        coEvery {
-            momentUseCase.fetchTweets()
-        } returns initialTweets
-
-        awaitItem().assertIdleState()
-
-        mainViewModel.onEvent(
-            MainEvent.FetchTweets
-        )
-
         advanceUntilIdle()
 
-        val state = awaitItem().assertFetchTweetsResultContent(1, initialTweets.first().content!!, 0)
+        val state = awaitItem().assertFetchTweetsResultContent(
+            size = 1,
+            content = initialTweets.first().content!!,
+            index = 0,
+        )
 
-        validate(state)
+        validate(state, mainViewModel)
     }
+
+    return mainViewModel
 }
 

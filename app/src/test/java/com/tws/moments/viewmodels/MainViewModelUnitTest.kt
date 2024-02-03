@@ -5,7 +5,8 @@ import com.tws.moments.datasource.usecase.MomentsUseCase
 import com.tws.moments.datasource.usecase.helpers.ResultUC
 import com.tws.moments.datasource.usecase.helpers.fails
 import com.tws.moments.ui.main.MainEvent
-import com.tws.moments.ui.main.MainViewModelCreateTweet
+import com.tws.moments.ui.main.MainViewModel
+import com.tws.moments.ui.navigation.AppNavigator
 import com.tws.moments.utils.MainDispatcherRule
 import com.tws.moments.utils.mockCommentBean
 import com.tws.moments.utils.mockTweetBean
@@ -37,16 +38,24 @@ class MainViewModelUnitTest {
     var rule: TestRule = MainDispatcherRule()
 
     private lateinit var momentUseCase: MomentsUseCase
-    private lateinit var mainViewModel: MainViewModelCreateTweet
+    private lateinit var navigator: AppNavigator
+    private lateinit var mainViewModel: MainViewModel
 
     @Before
     fun setUp() {
+        navigator = mockk<AppNavigator>()
         momentUseCase = mockk<MomentsUseCase>()
-        mainViewModel = MainViewModelCreateTweet(momentUseCase)
+
+        setupEmptyAnswers()
+    }
+
+    private fun setupEmptyAnswers() {
+        coEvery { momentUseCase.fetchTweets() } returns null
+        coEvery { momentUseCase.fetchUser() } returns null
     }
 
     @Test
-    fun `fetch tweets, retrieve null`() = runTest {
+    fun `fetch tweets at the init, retrieve null`() = runTest {
         coEvery {
             momentUseCase.fetchTweets()
         } coAnswers {
@@ -54,13 +63,9 @@ class MainViewModelUnitTest {
             null
         }
 
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
-
-            mainViewModel.onEvent(
-                MainEvent.FetchTweets
-            )
-
             awaitItem().assertFetchingTweets()
 
             awaitItem().assertFetchTweetsResultNull()
@@ -70,18 +75,14 @@ class MainViewModelUnitTest {
     }
 
     @Test
-    fun `fetch tweets, retrieve empty list`() = runTest {
+    fun `fetch tweets at the init, retrieve empty list`() = runTest {
         coEvery {
             momentUseCase.fetchTweets()
         } returns listOf()
 
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
-
-            mainViewModel.onEvent(
-                MainEvent.FetchTweets
-            )
-
             advanceUntilIdle()
 
             awaitItem().assertFetchTweetsResult(0)
@@ -91,7 +92,7 @@ class MainViewModelUnitTest {
     }
 
     @Test
-    fun `fetch tweet, delayed, retrieve populated list`() = runTest {
+    fun `fetch tweet at the init, delayed, retrieve populated list`() = runTest {
         val contentTest = "Content 1"
 
         coEvery {
@@ -103,13 +104,9 @@ class MainViewModelUnitTest {
             )
         }
 
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
-
-            mainViewModel.onEvent(
-                MainEvent.FetchTweets
-            )
-
             awaitItem().assertFetchingTweets()
 
             awaitItem().assertFetchTweetsResultContent(1, contentTest, 0)
@@ -127,9 +124,9 @@ class MainViewModelUnitTest {
             null
         }
 
-        mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
+        mainViewModel = MainViewModel(navigator, momentUseCase)
 
+        mainViewModel.uiState.test {
             mainViewModel.onEvent(
                 MainEvent.RefreshTweets
             )
@@ -148,9 +145,9 @@ class MainViewModelUnitTest {
             momentUseCase.fetchTweets()
         } returns listOf()
 
-        mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
+        mainViewModel = MainViewModel(navigator, momentUseCase)
 
+        mainViewModel.uiState.test {
             mainViewModel.onEvent(
                 MainEvent.RefreshTweets
             )
@@ -164,20 +161,14 @@ class MainViewModelUnitTest {
     }
 
     @Test
-    fun `fetch user bean, retrieve null`() = runTest {
+    fun `fetch user bean at the init, retrieve null`() = runTest {
         coEvery {
             momentUseCase.fetchUser()
         } returns null
 
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
-
-            mainViewModel.onEvent(
-                MainEvent.FetchUserBean
-            )
-
-            expectNoEvents()
-
             mainViewModel.uiState.value.assertUserInfoNull()
 
             cancelAndConsumeRemainingEvents()
@@ -185,20 +176,16 @@ class MainViewModelUnitTest {
     }
 
     @Test
-    fun `fetch user bean, retrieve valid user`() = runTest {
+    fun `fetch user bean at the init, retrieve valid user`() = runTest {
         val userName = "userName"
 
         coEvery {
             momentUseCase.fetchUser()
         } returns mockUserBean(userName)
 
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
-
-            mainViewModel.onEvent(
-                MainEvent.FetchUserBean
-            )
-
             advanceUntilIdle()
 
             awaitItem().assertUserBean(userName)
@@ -214,6 +201,7 @@ class MainViewModelUnitTest {
         coEvery {
             momentUseCase.loadMoreTweets(pageTwo)
         } returns flow {
+            delay(DELAY_TO_UPDATE_STATE)
             emit(
                 ResultUC.success(
                     arrayListOf(
@@ -224,8 +212,10 @@ class MainViewModelUnitTest {
             )
         }
 
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiState.test {
-            awaitItem().assertIdleState()
+            awaitItem()
 
             mainViewModel.onEvent(
                 MainEvent.FetchMoreTweets
@@ -259,9 +249,9 @@ class MainViewModelUnitTest {
             }
 
             loadInitialTweetAndAdvance(
-                mainViewModel = mainViewModel,
+                appNavigator = navigator,
                 momentUseCase = momentUseCase,
-            ) {
+            ) { state, mainViewModel ->
                 mainViewModel.onEvent(
                     MainEvent.FetchMoreTweets
                 )
@@ -289,9 +279,9 @@ class MainViewModelUnitTest {
         }
 
         loadInitialTweetAndAdvance(
-            mainViewModel = mainViewModel,
+            appNavigator = navigator,
             momentUseCase = momentUseCase,
-        ) {
+        ) { state, mainViewModel ->
             mainViewModel.onEvent(
                 MainEvent.FetchMoreTweets
             )
@@ -316,9 +306,9 @@ class MainViewModelUnitTest {
             }
 
             loadInitialTweetAndAdvance(
-                mainViewModel = mainViewModel,
+                appNavigator = navigator,
                 momentUseCase = momentUseCase,
-            ) {
+            ) { state, mainViewModel ->
                 mainViewModel.onEvent(
                     MainEvent.FetchMoreTweets
                 )
@@ -334,9 +324,9 @@ class MainViewModelUnitTest {
     @Test
     fun `share comment, create valid comment to a tweet without comments`() = runTest {
         loadInitialTweetAndAdvance(
-            mainViewModel = mainViewModel,
+            appNavigator = navigator,
             momentUseCase = momentUseCase,
-        ) { state ->
+        ) { state, mainViewModel ->
             val firstTweet = mainViewModel.uiState.value.tweets!!.first()
             val newComment = "New comment"
 
@@ -377,6 +367,8 @@ class MainViewModelUnitTest {
 
     @Test
     fun `open image`() = runTest {
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiEvent.test {
             mainViewModel.onEvent(MainEvent.OpenImage(listOf("not empty url")))
 
@@ -388,6 +380,8 @@ class MainViewModelUnitTest {
 
     @Test
     fun `closes image`() = runTest {
+        mainViewModel = MainViewModel(navigator, momentUseCase)
+
         mainViewModel.uiEvent.test {
             mainViewModel.onEvent(MainEvent.OpenImage(listOf("not empty url")))
 

@@ -119,7 +119,7 @@ val blue = Color(0xFF4152C9)
 
 @Composable
 fun MainScreenRoot(
-    viewModel: MainViewModelCreateTweet = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val uiEvent = viewModel.uiEvent
