@@ -1,4 +1,4 @@
-package com.tws.moments.datasource.tracker
+package com.tws.moments.core.tracker
 
 import android.util.Log
 
@@ -6,7 +6,7 @@ import android.util.Log
 const val TAG = "WTracker"
 private const val UNKNOWN = "UNKNOWN"
 private const val PROJECT_PATH = "com.tws.moments"
-private const val TRACKER_CLASS_PATH = "com.tws.moments.datasource.tracker.TrackerKt"
+private const val TRACKER_CLASS_PATH = "com.tws.moments.core.tracker.TrackerKt"
 const val MESSAGE_DIVISOR = ":::"
 
 inline fun track(description: String? = "", block: () -> Unit) {
