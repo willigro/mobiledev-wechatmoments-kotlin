@@ -4,10 +4,13 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tws.moments.core.file.BitmapExif
 import com.tws.moments.core.file.FileResolver
 import com.tws.moments.core.file.utils.toBitmapExif
+import com.tws.moments.core.tracker.track
+import com.tws.moments.datasource.usecase.MomentsUseCase
+import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.ui.createtweet.shared.ui.CreateTweetNavigationEvent
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiEvent
 import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiState
 import com.tws.moments.ui.navigation.AppNavigator
 import com.tws.moments.ui.navigation.ScreensNavigation
@@ -15,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,6 +29,8 @@ import javax.inject.Inject
 class CreateTweetViewModel @Inject constructor(
     private val appNavigator: AppNavigator,
     private val fileResolver: FileResolver,
+    private val momentsUseCase: MomentsUseCase,
+    private val iDispatcher: IDispatcher,
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<CreateTweetUiState> = MutableStateFlow(
@@ -51,13 +57,28 @@ class CreateTweetViewModel @Inject constructor(
                 appNavigator.navigateBack(ScreensNavigation.CreateTweet.TakeSinglePicture.destination)
             }
 
-            CreateTweetNavigationEvent.SavePicture -> {
-                appNavigator.navigateTo(ScreensNavigation.CreateTweet.SaveTweet.destination)
+            CreateTweetNavigationEvent.Closes -> {
+                appNavigator.navigateTo(
+                    route = ScreensNavigation.Main.destination,
+                    inclusive = true,
+                )
             }
         }
     }
 
-    fun takePicture(imageCapture: ImageCapture) = viewModelScope.launch {
+    fun onEvent(event: CreateTweetUiEvent) {
+        when (event) {
+            is CreateTweetUiEvent.TakePicture -> {
+                takePicture(event.imageCapture)
+            }
+
+            is CreateTweetUiEvent.SavePicture -> {
+                savePicture(event)
+            }
+        }
+    }
+
+    private fun takePicture(imageCapture: ImageCapture) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             fileResolver.takePhoto(
                 imageCapture = imageCapture,
@@ -69,15 +90,28 @@ class CreateTweetViewModel @Inject constructor(
                     }
                 },
                 onError = {
-                    com.tws.moments.core.tracker.track(it)
+                    track(it)
                 },
             )
         }
     }
 
-    fun savePicture(bitmapExif: BitmapExif) {
-        val result = bitmapExif.let { it1 -> fileResolver.saveInternalFile(it1, "testing") }
+    private fun savePicture(event: CreateTweetUiEvent.SavePicture) = viewModelScope.launch {
+        withContext(iDispatcher.dispatcherIO()) {
+            uiState.value.bitmapExif?.let { bitmapExif ->
+                fileResolver.saveInternalFile(bitmapExif, "testing")
+            }?.also { result ->
+                track(result)
 
-        com.tws.moments.core.tracker.track(result)
+                momentsUseCase.createTweet(
+                    event.content,
+                    result,
+                ).collectLatest { resultUC ->
+                    if (resultUC.isSuccess) {
+                        onNavigationEvent(CreateTweetNavigationEvent.Closes)
+                    }
+                }
+            }
+        }
     }
 }

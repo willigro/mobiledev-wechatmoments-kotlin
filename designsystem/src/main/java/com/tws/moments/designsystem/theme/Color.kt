@@ -69,9 +69,9 @@ val md_theme_dark_outlineVariant = Color(0xFF424940)
 val md_theme_dark_scrim = Color(0xFF000000)
 
 @Composable
-fun appTextFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = MaterialTheme.colorScheme.background,
-    unfocusedContainerColor = MaterialTheme.colorScheme.background,
-    disabledContainerColor = MaterialTheme.colorScheme.background,
-    errorContainerColor = MaterialTheme.colorScheme.background,
+fun appTextFieldColors(color: Color? = null) = TextFieldDefaults.colors(
+    focusedContainerColor = color ?: MaterialTheme.colorScheme.background,
+    unfocusedContainerColor = color ?: MaterialTheme.colorScheme.background,
+    disabledContainerColor = color ?: MaterialTheme.colorScheme.background,
+    errorContainerColor = color ?: MaterialTheme.colorScheme.background,
 )

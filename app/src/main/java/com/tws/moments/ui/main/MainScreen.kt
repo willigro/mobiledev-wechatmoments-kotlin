@@ -2,6 +2,7 @@ package com.tws.moments.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -686,28 +687,9 @@ private fun TweetImages(
     imageUrls?.also {
         when (imageUrls.list.size) {
             ONE_PICTURE -> {
-                // TODO (rittmann) apply this calc to the size, see [SingleImageView]
-                // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
-                SubcomposeAsyncImage(
-                    modifier = Modifier
-                        .size(
-                            width = AppTheme.dimensions.baseTweet.singleImageWidth,
-                            height = AppTheme.dimensions.baseTweet.singleImageHeight,
-                        )
-                        .padding(
-                            bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
-                        )
-                        .clickable {
-                            onEvent(
-                                MainEvent.OpenImage(listOf(imageUrls.list[0]))
-                            )
-                        },
-                    contentScale = ContentScale.Crop,
-                    model = imageUrls.list[0],
-                    loading = {
-                        LoadingImageComponent()
-                    },
-                    contentDescription = stringResource(R.string.content_description_tweet_picture_image)
+                SingleTweetPostImage(
+                    image = imageUrls.list.first(),
+                    onEvent = onEvent,
                 )
             }
 
@@ -767,6 +749,36 @@ private fun TweetImages(
             }
         }
     }
+}
+
+@Composable
+fun SingleTweetPostImage(
+    image: String,
+    onEvent: (MainEvent) -> Unit,
+) {
+    // TODO (rittmann) apply this calc to the size, see [SingleImageView]
+    // imageWidth = (measuredHeight * bm.width * 1f / bm.height).toInt()
+    SubcomposeAsyncImage(
+        modifier = Modifier
+            .size(
+                width = AppTheme.dimensions.baseTweet.singleImageWidth,
+                height = AppTheme.dimensions.baseTweet.singleImageHeight,
+            )
+            .padding(
+                bottom = AppTheme.dimensions.paddingSpaceBetweenComponentsSmall,
+            )
+            .clickable {
+                onEvent(
+                    MainEvent.OpenImage(listOf(image))
+                )
+            },
+        contentScale = ContentScale.Crop,
+        model = image,
+        loading = {
+            LoadingImageComponent()
+        },
+        contentDescription = stringResource(R.string.content_description_tweet_picture_image)
+    )
 }
 
 @Composable
@@ -1140,4 +1152,12 @@ fun Preview_MainScreen_CommentedTweet() {
 
         }
     }
+}
+
+fun toUriFile(uri: String): Uri? {
+    if (uri.toString().contains("file://")) {
+        return Uri.parse(uri)
+    }
+
+    return null
 }

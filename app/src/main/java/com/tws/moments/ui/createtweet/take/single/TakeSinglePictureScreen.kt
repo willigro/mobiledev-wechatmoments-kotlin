@@ -9,14 +9,12 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -33,10 +31,11 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tws.moments.designsystem.theme.AppTheme
-import com.tws.moments.ui.createtweet.shared.ui.CreateTweetNavigationEvent
-import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiState
 import com.tws.moments.ui.createtweet.shared.CreateTweetViewModel
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetNavigationEvent
 import com.tws.moments.ui.createtweet.shared.ui.CreateTweetToolbar
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiEvent
+import com.tws.moments.ui.createtweet.shared.ui.CreateTweetUiState
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -59,32 +58,25 @@ fun TakeSinglePictureScreenRoot(
 
     TakeSinglePictureScreen(
         uiState = uiState,
-        takePicture = viewModel::takePicture,
         onNavigationEvent = viewModel::onNavigationEvent,
+        onEvent = viewModel::onEvent,
     )
 }
 
 @Composable
-fun TakeSinglePictureScreen(
+private fun TakeSinglePictureScreen(
     uiState: CreateTweetUiState,
-    takePicture: (ImageCapture) -> Unit,
     onNavigationEvent: (CreateTweetNavigationEvent) -> Unit,
+    onEvent: (CreateTweetUiEvent) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         CreateTweetToolbar(modifier = Modifier) {
             onNavigationEvent(CreateTweetNavigationEvent.Back)
         }
 
-        Text(
-            text = "Next",
-            modifier = Modifier.clickable {
-                onNavigationEvent(CreateTweetNavigationEvent.SavePicture)
-            }
-        )
-
         if (uiState.bitmapExif?.bitmap == null) {
             CameraView(
-                takePicture = takePicture,
+                onEvent = onEvent,
             )
         } else {
             onNavigationEvent(CreateTweetNavigationEvent.ShowPicture)
@@ -94,8 +86,8 @@ fun TakeSinglePictureScreen(
 
 
 @Composable
-fun CameraView(
-    takePicture: (ImageCapture) -> Unit,
+private fun CameraView(
+    onEvent: (CreateTweetUiEvent) -> Unit,
 ) {
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val context = LocalContext.current
@@ -154,9 +146,8 @@ fun CameraView(
                         },
                         onTap = {
                             if (isInside.value) {
-
-                                takePicture(
-                                    imageCapture
+                                onEvent(
+                                    CreateTweetUiEvent.TakePicture(imageCapture)
                                 )
                             }
 
@@ -188,15 +179,16 @@ fun CameraView(
     }
 }
 
-suspend fun Context.getCameraProvider(): ProcessCameraProvider = suspendCoroutine { continuation ->
-    ProcessCameraProvider.getInstance(this).also { cameraProvider ->
-        cameraProvider.addListener({
-            continuation.resume(cameraProvider.get())
-        }, ContextCompat.getMainExecutor(this))
+private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
+    suspendCoroutine { continuation ->
+        ProcessCameraProvider.getInstance(this).also { cameraProvider ->
+            cameraProvider.addListener({
+                continuation.resume(cameraProvider.get())
+            }, ContextCompat.getMainExecutor(this))
+        }
     }
-}
 
-class Circle(val x: Float, val y: Float, val radius: Float) {
+private class Circle(val x: Float, val y: Float, val radius: Float) {
     fun intersect(
         x: Float, y: Float
     ): Boolean {

@@ -80,13 +80,11 @@ fun Bitmap.saveTo(file: File): String? {
         this.compress(Bitmap.CompressFormat.JPEG, 100, fos)
     } catch (e: Exception) {
         track(e)
-        e.printStackTrace()
     } finally {
         try {
             fos?.close()
         } catch (e: IOException) {
             track(e)
-            e.printStackTrace()
         }
     }
     return file.absolutePath

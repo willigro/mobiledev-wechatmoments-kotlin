@@ -1,11 +1,13 @@
 package com.tws.moments.datasource.usecase
 
 import androidx.annotation.VisibleForTesting
+import com.tws.moments.core.file.Image
 import com.tws.moments.datasource.api.entry.CommentsBean
 import com.tws.moments.datasource.api.entry.SenderBean
 import com.tws.moments.datasource.api.entry.UserBean
 import com.tws.moments.datasource.mappers.mapToTweetBean
 import com.tws.moments.datasource.repository.MomentRepository
+import com.tws.moments.datasource.shared.data.StableList
 import com.tws.moments.datasource.shared.data.TweetBean
 import com.tws.moments.datasource.usecase.helpers.IDispatcher
 import com.tws.moments.datasource.usecase.helpers.ResultUC
@@ -27,6 +29,8 @@ interface MomentsUseCase {
         tweetBean: TweetBean,
         comment: String,
     ): Flow<ResultUC<List<CommentsBean>?>>
+
+    suspend fun createTweet(content: String, result: Image): Flow<ResultUC<Boolean>>
 }
 
 @VisibleForTesting
@@ -39,6 +43,7 @@ class MomentsUseCaseImpl @Inject constructor(
 ) : MomentsUseCase {
 
     private var allTweets: List<TweetBean>? = null
+    private var localAllTweets: ArrayList<TweetBean> = arrayListOf()
 
     override suspend fun fetchUser(): UserBean? {
         val result = try {
@@ -52,7 +57,14 @@ class MomentsUseCaseImpl @Inject constructor(
 
     override suspend fun fetchTweets(): List<TweetBean>? {
         allTweets = try {
-            repository.fetchTweets().mapToTweetBean(dateUtils)
+            repository.fetchTweets().mapToTweetBean(dateUtils).let {
+                arrayListOf<TweetBean>().apply {
+                    addAll(localAllTweets)
+                    it?.also {
+                        this.addAll(it)
+                    }
+                }
+            }
         } catch (e: Exception) {
             null
         }
@@ -105,6 +117,32 @@ class MomentsUseCaseImpl @Inject constructor(
 
         emit(ResultUC.success(tweetBean.comments))
     }.flowOn(iDispatcher.dispatcherDefault())
+
+    override suspend fun createTweet(
+        content: String, result: Image
+    ): Flow<ResultUC<Boolean>> = flow {
+        try {
+            val bean = TweetBean(
+                content = content,
+                sender = SenderBean("nick", null, null),
+                imagesUrls = StableList(listOf(result.uri.toString()))
+            )
+
+            localAllTweets.add(0, bean)
+
+            if (allTweets.isNullOrEmpty()) {
+                allTweets = listOf(bean)
+            } else {
+                (allTweets as ArrayList).add(0, bean)
+            }
+
+            emit(
+                ResultUC.success()
+            )
+        } catch (e: Exception) {
+            fails()
+        }
+    }
 
     private val pageCount: Int
         get() {

@@ -5,4 +5,10 @@
     <string name="expandable_text_show_more_ellipsis">…show more</string>
     <string name="expandable_text_show_more">show more</string>
     <string name="expandable_text_show_less">show less</string>
+
+    <!-- Create tweet -->
+    <string name="create_tweet_save_action">Save</string>
+    <string name="create_tweet_content_label_1">How was this moment?</string>
+    <string name="create_tweet_content_label_2">How were you feeling?</string>
+    <string name="create_tweet_content_label_3">What would you like to share?</string>
 </resources>

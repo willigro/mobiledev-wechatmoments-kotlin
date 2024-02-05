@@ -80,8 +80,12 @@ fun NavigationEffects(
                 is NavigationIntent.NavigateTo -> {
                     navHostController.navigate(intent.route) {
                         launchSingleTop = intent.isSingleTop
-                        intent.popUpToRoute?.let { popUpToRoute ->
-                            popUpTo(popUpToRoute) { inclusive = intent.inclusive }
+                        if (intent.inclusive && intent.popUpToRoute == null) {
+                            popUpTo(navHostController.graph.id) { inclusive = true }
+                        } else {
+                            intent.popUpToRoute?.let { popUpToRoute ->
+                                popUpTo(popUpToRoute) { inclusive = intent.inclusive }
+                            }
                         }
                     }
                 }
