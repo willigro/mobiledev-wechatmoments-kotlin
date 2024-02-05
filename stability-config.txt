@@ -1,0 +1,1 @@
+com.tws.moments.core.file.BitmapExif
